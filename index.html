@@ -192,7 +192,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 
 <script>
 'use strict';
-const STORE_KEY='ddData_v1';const BACKUP_PREFIX='ddData_v1_backup_';const CORRUPT_KEY='ddData_v1_corrupted_backup';const SYNC_KEY='ddSyncMeta_v1';const BUILD='v0.2.0-20261119';
+const STORE_KEY='ddData_v1';const BACKUP_PREFIX='ddData_v1_backup_';const CORRUPT_KEY='ddData_v1_corrupted_backup';const SYNC_KEY='ddSyncMeta_v1';const BUILD='v0.2.1-20261119';
 const SUPABASE_URL='https://gqjbtbxtkiptjeryqawd.supabase.co';
 const SUPABASE_KEY='sb_publishable_xAbx5HkUJCMssWBtPWzgCw_9UDQNrc2';
 const SUPABASE_TABLE='dd_data';
@@ -764,6 +764,7 @@ function bindStaticUI(){
     $('#loginPw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
     $('#btnLogout').onclick=doLogout;
     $('#btnLogoutLogin').onclick=doLogout;
+    try{sb.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){currentUser=null;sessionReady=false;clearLocalData();updateAuthUI(false);showLogin();showLoginError('');}});}catch(e){console.warn('[auth] listener failed',e);}
   }
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
   window.addEventListener('beforeunload',()=>{if(state)saveState();});
