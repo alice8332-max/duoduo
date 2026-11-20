@@ -43,12 +43,14 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI"
 .metric .val{font-size:23px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .metric .sub{font-size:12px;margin-top:3px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .up{color:var(--up)}.down{color:var(--down)}
-.dash-top{grid-template-columns:1.08fr .92fr}
+.metric-strip{display:flex;gap:10px;margin-bottom:14px}
+.metric-strip .metric{flex:1 1 0;min-width:0}
+.dash-top{grid-template-columns:1.3fr .7fr}
 .dash-mid,.dash-bottom{grid-template-columns:1fr;margin-top:14px}
 .alloc-stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--card2);margin:10px 0 14px}
 .alloc-seg{min-width:2px}
 .alloc-list{display:grid;gap:7px}
-.alloc-row{display:grid;grid-template-columns:12px 1fr auto 62px;gap:9px;align-items:center;font-size:13px}
+.alloc-row{display:grid;grid-template-columns:12px 1fr auto 62px 78px;gap:9px;align-items:center;font-size:13px}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 .alloc-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .alloc-row .pct{text-align:right;color:var(--muted)}
@@ -137,9 +139,12 @@ tr:hover td{background:#f8fafc}
 .step-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .step-head h2{font-size:15px;font-weight:650}
 .step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
-.inline-form{display:grid;grid-template-columns:110px 120px minmax(140px,1fr) 120px minmax(120px,1fr) auto;gap:8px;align-items:end;margin-top:10px}
-.inline-form.transfer{grid-template-columns:110px minmax(140px,1fr) minmax(140px,1fr) 120px minmax(120px,1fr) auto}
+.inline-form{display:grid;grid-template-columns:132px 92px 92px minmax(104px,1fr) 104px minmax(88px,1fr) 66px;gap:7px;align-items:end;margin-top:10px}
+.inline-form.transfer{grid-template-columns:132px minmax(120px,1fr) minmax(120px,1fr) 104px minmax(88px,1fr) 66px}
 .inline-form .field{min-width:0}
+.inline-form>button{width:100%;white-space:nowrap;padding-left:6px;padding-right:6px}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
 .flow-list{display:grid;gap:6px;margin-top:10px}
 .flow-item{display:flex;gap:10px;align-items:center;padding:8px 10px;background:var(--card2);border-radius:8px;font-size:12px;flex-wrap:wrap}
 .flow-item .grow{flex:1}
@@ -166,14 +171,14 @@ label{font-size:12px;color:var(--muted)}
 .summary-strip .box{background:var(--card2);border-radius:9px;padding:10px 12px}
 .summary-strip .box .lbl{font-size:11px;color:var(--muted)}
 .summary-strip .box .val{font-size:18px;font-weight:700;margin-top:2px}
-.ledger-equation{margin:6px 0 10px}
-.ledger-equation .le-row{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(20,26,38,.06);font-size:14px}
-.ledger-equation .le-sign{font-weight:700;font-size:15px;text-align:center;color:var(--muted)}
-.ledger-equation .le-sign.pos,.ledger-equation .le-amount.pos{color:var(--good)}
-.ledger-equation .le-sign.neg,.ledger-equation .le-amount.neg{color:var(--bad)}
-.ledger-equation .le-label{color:var(--ink)}
-.ledger-equation .le-amount{text-align:right;font-variant-numeric:tabular-nums}
-.ledger-equation .le-total{font-weight:700;font-size:15px;background:var(--card2)}
+.ledger-equation{margin:10px 0 14px;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.ledger-equation .le-row{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(20,26,38,.06);font-size:16px}
+.ledger-equation .le-sign{font-weight:700;font-size:18px;text-align:center;color:var(--muted)}
+.ledger-equation .le-sign.pos,.ledger-equation .le-amount.pos{color:var(--up)}
+.ledger-equation .le-sign.neg,.ledger-equation .le-amount.neg{color:var(--down)}
+.ledger-equation .le-label{color:var(--text)}
+.ledger-equation .le-amount{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.ledger-equation .le-total{font-weight:700;font-size:18px;background:var(--card2)}
 .ledger-equation .le-total:first-child{border-radius:8px 8px 0 0;border-top:1px solid rgba(20,26,38,.1)}
 .ledger-equation .le-total:last-of-type{border-radius:0 0 8px 8px;border-bottom:none;border-top:2px solid rgba(20,26,38,.18)}
 .ledger-equation .le-extras{margin-top:8px;font-size:11px;color:var(--muted);line-height:1.7}
@@ -208,7 +213,7 @@ body.locked .app{display:none}
 .login-card{width:100%;max-width:380px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px 24px;box-shadow:0 12px 40px rgba(16,24,40,.14)}
 .login-card h2{font-size:18px;margin-bottom:6px}
 .login-card .err{color:var(--bad);font-size:12px;min-height:18px;margin:4px 0 8px}
-@media(max-width:900px){body{padding:14px 12px 56px}.metrics{grid-template-columns:repeat(2,1fr)}.dash-top{grid-template-columns:1fr}.consumption{grid-template-columns:1fr}.summary-strip{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.opening-grid{grid-template-columns:1fr}.topbar-actions{margin-left:0;width:100%}.topbar-actions .btn{flex:1}.alloc-row{grid-template-columns:12px 1fr auto 54px}.acc-leaf{grid-template-columns:1fr auto;row-gap:2px}.acc-leaf .grp{display:none}}
+@media(max-width:900px){body{padding:14px 12px 56px}.metrics{grid-template-columns:repeat(2,1fr)}.dash-top{grid-template-columns:1fr}.consumption{grid-template-columns:1fr}.summary-strip{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.opening-grid{grid-template-columns:1fr}.topbar-actions{margin-left:0;width:100%}.topbar-actions .btn{flex:1}.alloc-row{grid-template-columns:12px 1fr auto 54px 70px}.metric-strip{flex-wrap:wrap}.metric-strip .metric{flex:1 1 45%}.acc-leaf{grid-template-columns:1fr auto;row-gap:2px}.acc-leaf .grp{display:none}}
 @media(max-width:600px){.modal-back{padding:12px}.modal{padding:14px}.modal .form-actions{flex-wrap:wrap}.modal .form-actions .btn.primary{margin-left:0}.build-tag{display:none}.topbar-actions .btn{padding:6px 8px;font-size:12px}.inline-form,.inline-form.transfer{grid-template-columns:1fr}.explain-row{grid-template-columns:1fr}.ledger-equation .le-row{grid-template-columns:22px 1fr auto;font-size:13px;padding:6px 8px}}
 </style>
 </head>
@@ -287,7 +292,7 @@ const LEGACY_KEY='ddData_v1_legacy_20261120';
 const LEGACY_BANNER_KEY='ddLegacyBannerDismissed_v1';
 const CORRUPT_KEY='ddData_v1_corrupted_backup';
 const SYNC_KEY='ddSyncMeta_v1';
-const BUILD='v0.7.0-20261120';
+const BUILD='v0.8.0-20261120';
 const PLATFORM_KEY='invPlatformData_v1';
 const PLATFORM_URL='https://alice8332-max.github.io/ftest/';
 const SUPABASE_URL='https://gqjbtbxtkiptjeryqawd.supabase.co';
@@ -332,6 +337,7 @@ function defaultState(){
     version:2,
     createdAt:nowISO(),
     settings:{lastReconcileDate:null},
+    reconcileDraft:null,
     allocationGroups:[],
     accounts:[
       {id:SYSTEM_GROUP_ID,name:SYSTEM_GROUP_NAME,kind:'group',order:9999,system:true},
@@ -357,6 +363,7 @@ function normalizeV2(raw){
   s.createdAt=s.createdAt||nowISO();
   s.settings=s.settings&&typeof s.settings==='object'?s.settings:{};
   s.settings={lastReconcileDate:s.settings.lastReconcileDate||null};
+  s.reconcileDraft=s.reconcileDraft&&typeof s.reconcileDraft==='object'?s.reconcileDraft:null;
   s.allocationGroups=Array.isArray(s.allocationGroups)?s.allocationGroups.filter(g=>g&&g.id).map((g,i)=>({id:String(g.id),name:String(g.name||'未命名'),color:String(g.color||CFG_COLORS[i%CFG_COLORS.length]),order:num(g.order)||i+1})):[];
   const groups=[];const leaves=[];
   (Array.isArray(s.accounts)?s.accounts:[]).forEach((a,i)=>{
@@ -377,7 +384,7 @@ function normalizeV2(raw){
   Object.keys(s.holdingSettings||{}).forEach(code=>{const v=s.holdingSettings[code]||{};hs[String(code)]={categoryId:v.categoryId&&catIds.has(String(v.categoryId))?String(v.categoryId):null,order:num(v.order)||0};});
   s.holdingSettings=hs;
   s.imports=Array.isArray(s.imports)?s.imports.filter(i=>i&&Array.isArray(i.holdings)).map(i=>({id:String(i.id||uid()),importedAt:String(i.importedAt||nowISO()),source:String(i.source||'invPlatformData_v1'),mode:String(i.mode||'manual'),holdings:i.holdings.map(h=>({code:String(h.code||''),name:String(h.name||h.code||''),shares:num(h.shares),avgCost:num(h.avgCost),currentPrice:num(h.currentPrice),floating:num(h.floating),lastUpdate:String(h.lastUpdate||'').slice(0,10),order:num(h.order)||0})).filter(h=>h.code)})).sort((a,b)=>String(a.importedAt).localeCompare(String(b.importedAt))):[];
-  s.snapshots=Array.isArray(s.snapshots)?s.snapshots.filter(x=>x&&x.date).map(x=>({...x,id:String(x.id||uid()),date:String(x.date),type:(x.type==='opening'||x.opening)?'opening':'reconcile',floatingTotal:num(x.floatingTotal)||0,externalNet:num(x.externalNet)||0,floatingChange:num(x.floatingChange)||0,externalCategories:x.externalCategories&&typeof x.externalCategories==='object'?{income:num(x.externalCategories.income),expense:num(x.externalCategories.expense),other:num(x.externalCategories.other)}:{income:0,expense:0,other:0},ledgerV:num(x.ledgerV)||0,items:Array.isArray(x.items)?x.items.map(it=>({...it,floating:num(it&&it.floating)||0})):[]})).sort((a,b)=>String(a.date).localeCompare(String(b.date))):[];
+  s.snapshots=Array.isArray(s.snapshots)?s.snapshots.filter(x=>x&&x.date).map(x=>({...x,id:String(x.id||uid()),date:String(x.date),periodMonth:String(x.periodMonth||String(x.date).slice(0,7)),type:(x.type==='opening'||x.opening)?'opening':'reconcile',floatingTotal:num(x.floatingTotal)||0,externalNet:num(x.externalNet)||0,floatingChange:num(x.floatingChange)||0,externalCategories:x.externalCategories&&typeof x.externalCategories==='object'?{income:num(x.externalCategories.income),expense:num(x.externalCategories.expense),other:num(x.externalCategories.other)}:{income:0,expense:0,other:0},ledgerV:num(x.ledgerV)||0,items:Array.isArray(x.items)?x.items.map(it=>({...it,floating:num(it&&it.floating)||0})):[]})).sort((a,b)=>String(a.date).localeCompare(String(b.date))):[];
   s.flows=Array.isArray(s.flows)?s.flows.filter(f=>f&&f.date).map(f=>({id:String(f.id||uid()),date:String(f.date),type:['external_in','external_out','transfer'].includes(f.type)?f.type:'external_in',category:FLOW_CATEGORIES.some(c=>c.id===f.category)?f.category:inferFlowCategory({type:['external_in','external_out','transfer'].includes(f.type)?f.type:'external_in'}),amount:num(f.amount),fromKey:f.fromKey||f.fromAccountId||null,toKey:f.toKey||f.toAccountId||null,note:String(f.note||''),createdAt:String(f.createdAt||nowISO()),snapshotId:f.snapshotId||null})):[];
   return s;
 }
@@ -676,15 +683,19 @@ function totalAssets(){return visibleLeaves().reduce((s,l)=>s+num(l.amount),0);}
 function allocationData(){
   const total=totalAssets();
   const items=visibleLeaves().map(l=>({key:l.key||('a:'+l.id),name:l.name,groupId:l.parentId,categoryId:l.categoryId||null,amount:num(l.amount),isEtf:!!l.isEtf}));
+  const mk=monthKey(today());
+  const prev=snapshotBeforeFor(today(),mk);
+  const prevByCat={};
+  if(prev&&Array.isArray(prev.items))prev.items.forEach(it=>{const c=it.categoryId||'__none';prevByCat[c]=(prevByCat[c]||0)+num(it.actual);});
   const rows=state.allocationGroups.map(g=>{
     const arr=items.filter(it=>it.categoryId===g.id);
     const amount=arr.reduce((s,x)=>s+x.amount,0);
-    return {id:g.id,name:g.name,color:g.color,amount,pct:total>0?amount/total*100:null,count:arr.length};
+    return {id:g.id,name:g.name,color:g.color,amount,pct:total>0?amount/total*100:null,count:arr.length,delta:amount-num(prevByCat[g.id]||0)};
   });
   const uncat=items.filter(it=>!it.categoryId||!state.allocationGroups.some(g=>g.id===it.categoryId));
   if(uncat.length){
     const amount=uncat.reduce((s,x)=>s+x.amount,0);
-    rows.push({id:'__none',name:'未分类',color:'#9aa3ae',amount,pct:total>0?amount/total*100:null,count:uncat.length});
+    rows.push({id:'__none',name:'未分类',color:'#9aa3ae',amount,pct:total>0?amount/total*100:null,count:uncat.length,delta:amount-num(prevByCat.__none||0)});
   }
   return {total,items,rows};
 }
@@ -692,6 +703,15 @@ function openingSnapshot(){return state.snapshots.find(s=>s.type==='opening')||n
 function snapshotBefore(date){
   const list=state.snapshots.filter(s=>String(s.date)<String(date)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   return list.length?list[list.length-1]:null;
+}
+function snapMonth(s){return String(s&&s.periodMonth||(s?String(s.date).slice(0,7):''));}
+function snapshotBeforeFor(date,periodMonth){
+  const pm=String(periodMonth||String(date).slice(0,7));
+  const list=state.snapshots.filter(s=>snapMonth(s)<pm).sort((a,b)=>snapMonth(b).localeCompare(snapMonth(a))||String(b.date).localeCompare(String(a.date)));
+  return list.length?list[0]:null;
+}
+function monthSnapshot(periodMonth){
+  return state.snapshots.find(s=>s.type==='reconcile'&&snapMonth(s)===String(periodMonth))||null;
 }
 function latestSnapshot(){
   if(!state)return null;
@@ -703,19 +723,32 @@ function snapshotDelta(){
   if(list.length<2)return null;
   return num(list[list.length-1].totalAssets)-num(list[list.length-2].totalAssets);
 }
+function monthIndex(mk){const p=String(mk).split('-');return num(p[0])*12+(num(p[1])-1);}
+function monthKeyOfIndex(idx){return Math.floor(idx/12)+'-'+String((idx%12)+1).padStart(2,'0');}
 function monthConsumption(){
-  const mk=monthKey(today());
-  return state.snapshots.filter(s=>s.type==='reconcile'&&String(s.date).slice(0,7)===mk).reduce((sum,s)=>sum+num(s.consumption),0);
+  const s=monthSnapshot(monthKey(today()));
+  return s?num(s.consumption):0;
 }
 function consumptionTrend(months=6){
   const res=[];const now=new Date();
   for(let i=months-1;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1);
     const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    let v=0;
-    state.snapshots.forEach(s=>{if(s.type==='reconcile'&&String(s.date).slice(0,7)===mk)v+=num(s.consumption);});
-    res.push({month:mk,label:(d.getMonth()+1)+'月',value:v});
+    res.push({month:mk,label:(d.getMonth()+1)+'月',value:0,floatingValue:0});
   }
+  const map={};res.forEach(r=>map[r.month]=r);
+  state.snapshots.filter(s=>s.type==='reconcile').forEach(s=>{
+    const pm=snapMonth(s);
+    const base=snapshotBeforeFor(s.date,pm);
+    const bm=base?snapMonth(base):pm;
+    let span=monthIndex(pm)-monthIndex(bm);
+    if(span<1)span=1;
+    const perC=num(s.consumption)/span,perF=num(s.floatingChange)/span;
+    for(let k=1;k<=span;k++){
+      const mk=monthKeyOfIndex(monthIndex(bm)+k);
+      if(map[mk]){map[mk].value+=perC;map[mk].floatingValue+=perF;}
+    }
+  });
   return res;
 }
 
@@ -799,14 +832,31 @@ function rebuildDraftItems(preserve){
   });
   draft.items=fresh;
 }
-function startReconcile(render){
+function startReconcile(render,opts){
   if(!state)return false;
+  opts=opts||{};
   const date=today();
-  const latest=latestSnapshot();
-  if(latest&&String(date)<=String(latest.date))return false;
-  const prevSnap=snapshotBefore(date);
-  draft={date,fromDate:prevSnap?prevSnap.date:null,prevSnap,flows:[],items:[],notes:''};
-  draft.items=buildReconItems(prevSnap,draft);
+  const pm=String(opts.periodMonth||date).slice(0,7);
+  const prevSnap=snapshotBeforeFor(date,pm);
+  if(opts.fromDraft&&state.reconcileDraft){
+    draft=JSON.parse(JSON.stringify(state.reconcileDraft));
+    draft.prevSnap=prevSnap;
+  }else if(opts.editSnap){
+    const s=state.snapshots.find(x=>x.id===opts.editSnap);
+    if(s){
+      draft={date:s.date,periodMonth:snapMonth(s),fromDate:s.fromDate||null,prevSnap,
+        flows:state.flows.filter(f=>f.snapshotId===s.id).map(f=>({...f,_draft:false})),
+        items:JSON.parse(JSON.stringify(s.items||[])),notes:s.notes||'',editingSnapId:s.id};
+    }
+  }else if(!opts.fresh&&monthSnapshot(pm)){
+    const s=monthSnapshot(pm);
+    draft={date:s.date,periodMonth:pm,fromDate:s.fromDate||null,prevSnap,
+      flows:state.flows.filter(f=>f.snapshotId===s.id).map(f=>({...f,_draft:false})),
+      items:JSON.parse(JSON.stringify(s.items||[])),notes:s.notes||'',editingSnapId:s.id};
+  }else{
+    draft={date,periodMonth:pm,fromDate:prevSnap?prevSnap.date:null,prevSnap,flows:[],items:[],notes:'',editingSnapId:null};
+    draft.items=buildReconItems(prevSnap,draft);
+  }
   if(render!==false)renderReconcile();
   return true;
 }
@@ -875,8 +925,7 @@ function switchView(v){
   if(v==='allocation')v='accounts';
   if(cfgEditing&&v!=='accounts'){if(!confirm('放弃未保存的账户配置修改？'))return;cfgEditing=false;cfgDraft=null;}
   if(v==='reconcile'&&!draft&&!startReconcile(false)){
-    const latest=latestSnapshot();
-    toast(`最近快照日期为 ${latest?latest.date:'今天'}，盘点日期必须晚于该日期。如需重做，请编辑期初。`,'err');
+    toast('暂时无法开始盘点，请确认已登录且有账户配置。','err');
     v='dashboard';
   }
   activeView=v;
@@ -893,6 +942,18 @@ function renderDashboard(){
   const cons=monthConsumption();
   const trend=consumptionTrend(6);
   const maxTrend=Math.max(1,...trend.map(x=>x.value));
+  const ms=monthSnapshot(monthKey(today()));
+  const ec=ms&&ms.externalCategories?ms.externalCategories:{income:0,expense:0,other:0};
+  const myIncome=num(ec.income),myExpense=num(ec.expense),myOther=num(ec.other),myFloating=ms?num(ms.floatingChange):0;
+  const metricDefs=[
+    {lbl:'总资产',val:total,fmt:'money',always:true},
+    {lbl:'本月收入',val:myIncome,fmt:'signed'},
+    {lbl:'本月开支',val:myExpense,fmt:'signed'},
+    {lbl:'本月其他',val:myOther,fmt:'signed'},
+    {lbl:'本月消耗',val:cons,fmt:'signed'},
+    {lbl:'本月浮动盈亏',val:myFloating,fmt:'signed'}
+  ].filter(m=>m.always||Math.abs(m.val)>0.005);
+  const metricHtml=metricDefs.map(m=>`<div class="metric"><div class="lbl">${m.lbl}</div><div class="val num ${clsNum(m.val)}">${m.fmt==='money'?'¥'+fmtMoney(m.val):fmtSigned(m.val)}</div></div>`).join('');
   const manualCount=manualLeaves().filter(l=>groups().some(g=>g.id===l.parentId)).length;
   const hasAccounts=manualCount>0||currentHoldings().length>0;
   const opening=openingSnapshot();
@@ -906,20 +967,18 @@ function renderDashboard(){
     guide=`<div class="card" style="margin-bottom:14px"><div class="card-head"><h2>开始盘点</h2><span class="grow"></span><button class="btn small primary" id="btnStartGuide">开始盘点</button></div><div class="small muted">期初：${esc(opening.date)}。记录外部资金后，填写各账户实际余额和浮动盈亏。</div></div>`;
   }
   const segs=alloc.rows.filter(r=>r.amount>0).map(r=>`<div class="alloc-seg" style="flex:${r.pct||0};background:${esc(r.color)}" title="${esc(r.name)} ${r.pct==null?'--':fmtPct(r.pct)}"></div>`).join('');
-  const allocRows=alloc.rows.length?alloc.rows.map(r=>`<div class="alloc-row"><span class="dot" style="background:${esc(r.color)}"></span><span class="nm">${esc(r.name)}</span><span class="num">¥${fmtMoney(r.amount)}</span><span class="pct num">${r.pct==null?'--':fmtPct(r.pct)}</span></div>`).join(''):'<div class="empty">还没有配置类别/账户</div>';
+  const allocRows=alloc.rows.length?alloc.rows.map(r=>`<div class="alloc-row"><span class="dot" style="background:${esc(r.color)}"></span><span class="nm">${esc(r.name)}</span><span class="num">¥${fmtMoney(r.amount)}</span><span class="pct num">${r.pct==null?'--':fmtPct(r.pct)}</span><span class="num small ${clsNum(r.delta)}" title="较上次盘点">${Math.abs(r.delta)>0.005?fmtSigned(r.delta):'—'}</span></div>`).join(''):'<div class="empty">还没有配置类别/账户</div>';
   const trendBars=trend.map(t=>`<div class="trend-col"><div class="trend-bar" style="height:${Math.max(3,t.value/maxTrend*62)}px" title="${t.month} ¥${fmtMoney(t.value)}"></div><div class="trend-lbl">${t.label}</div></div>`).join('');
   const expenseFlows=expenseFlowList(8);
   const expenseRows=expenseFlows.length?expenseFlows.map(f=>`<tr><td>${esc(f.date)}</td><td>${esc(flowAccountName(f.fromKey))}</td><td class="n">¥${fmtMoney(f.amount)}</td><td>${esc(f.note||'—')}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">暂无标记为「开支」的大额记录</td></tr>';
   $('#view-dashboard').innerHTML=`
   ${guide}
-  <div class="grid metric-single">
-    <div class="metric"><div class="lbl">总资产</div><div class="val num">¥${fmtMoney(total)}</div><div class="sub ${delta==null?'':clsNum(delta)}">${delta==null?'暂无对比':(delta>=0?'较上次盘点 +':'较上次盘点 ')+fmtMoney(delta)}</div></div>
-  </div>
+  <div class="metric-strip">${metricHtml}</div>
   <div class="grid dash-top">
-    <div class="card"><div class="card-head"><h2>资产配置</h2><span class="faint small">${total>0?'占比按总资产':'总资产 ≤ 0，占比暂不计算'}</span><span class="grow"></span><button class="btn small" data-go="accounts">账户配置</button></div><div class="alloc-stack">${segs||'<div class="alloc-seg" style="flex:1;background:#eef0f4"></div>'}</div><div class="alloc-list">${allocRows}</div>${total<=0?'<div class="note warn">总资产小于等于 0，资产配置占比暂不计算。</div>':''}</div>
-    <div class="card"><div class="card-head"><h2>本月消耗</h2><span class="faint small">${monthKey(today())}</span><span class="grow"></span><button class="btn small" data-go="reconcile">去盘点</button></div><div class="consumption2"><div class="cons-main"><div class="big num">¥${fmtMoney(cons)}</div><div class="line">${state.snapshots.some(s=>s.type==='reconcile')?'当月日常开支（总账等式倒算，可为负）':'还没有盘点记录'}</div></div><div><div class="trend-bars">${trendBars}</div><div class="legend"><span>近 6 个月日常消费（不含大额开支）</span></div></div></div></div>
-  </div>
-  <div class="card" style="margin-top:14px"><div class="card-head"><h2>大额开支明细</h2><span class="faint small">标记为「开支」的外部资金，不计入上方消费</span></div><div class="table-wrap"><table><thead><tr><th>日期</th><th>账户</th><th class="n">金额</th><th>备注</th></tr></thead><tbody>${expenseRows}</tbody></table></div></div>`;
+    <div class="card"><div class="card-head"><h2>资产配置</h2><span class="faint small">金额 · 占比 · 较上次</span><span class="grow"></span><button class="btn small" data-go="accounts">账户配置</button></div><div class="alloc-stack">${segs||'<div class="alloc-seg" style="flex:1;background:#eef0f4"></div>'}</div><div class="alloc-list">${allocRows}</div>${total<=0?'<div class="note warn">总资产小于等于 0，资产配置占比暂不计算。</div>':''}</div>
+    <div><div class="card"><div class="card-head"><h2>本月消耗</h2><span class="faint small">${monthKey(today())}</span><span class="grow"></span><button class="btn small" data-go="reconcile">去盘点</button></div><div class="consumption2"><div class="cons-main"><div class="big num ${clsNum(cons)}">${fmtSigned(cons)}</div><div class="line">${state.snapshots.some(s=>s.type==='reconcile')?'当月日常开支（总账等式倒算，可为负）':'还没有盘点记录'}</div></div><div><div class="trend-bars">${trendBars}</div><div class="legend"><span>近 6 个月日常消费（含平摊）</span></div></div></div></div>
+    <div class="card" style="margin-top:14px"><div class="card-head"><h2>大额开支明细</h2><span class="faint small">标记为「开支」，不计入上方消费</span></div><div class="table-wrap"><table><thead><tr><th>日期</th><th>账户</th><th class="n">金额</th><th>备注</th></tr></thead><tbody>${expenseRows}</tbody></table></div></div></div>
+  </div>`;
   $$('#view-dashboard [data-go]').forEach(b=>b.onclick=()=>switchView(b.dataset.go));
   const og=$('#btnOpeningGuide');if(og)og.onclick=openOpeningModal;
   const sg=$('#btnStartGuide');if(sg)sg.onclick=()=>switchView('reconcile');
@@ -927,8 +986,7 @@ function renderDashboard(){
 function renderReconcile(){
   if(!state)return;
   if(!draft&&!startReconcile(false)){
-    const latest=latestSnapshot();
-    $('#view-reconcile').innerHTML=`<div class="card"><div class="empty">最近快照日期为 ${esc(latest?latest.date:'今天')}，盘点日期必须晚于该日期。如需重做，请到设置/盘点历史编辑期初。</div></div>`;
+    $('#view-reconcile').innerHTML='<div class="card"><div class="empty">暂时无法开始盘点，请确认已登录且有账户配置。</div></div>';
     return;
   }
   const cache=platformCacheInfo();
@@ -943,18 +1001,20 @@ function renderReconcile(){
     const sub=list.reduce((s,it)=>s+num(it.actual),0);
     const fl=list.reduce((s,it)=>s+num(it.floating),0);
     return `<tr style="background:#f8fafc"><td colspan="4" style="font-weight:650">${esc(g.name)}<span class="tag">${list.length} 项</span><span class="faint small" data-group-sub="${esc(g.id)}" style="float:right">小计 ¥${fmtMoney(sub)} · 浮盈浮亏 ${fmtSigned(fl)}</span></td></tr>`+list.map(it=>{
-      const actualCell=it.isEtf?`<span class="faint">¥${fmtMoney(it.actual)}</span><span class="tag plat">自动</span>`:`<input class="actual num" data-actual="${esc(it.key)}" type="number" step="0.01" inputmode="decimal" value="${it.actual}">`;
-      const floatingCell=it.isEtf?`<span class="${clsNum(it.floating)}">${fmtSigned(it.floating)}</span><span class="tag plat">自动</span>`:`<input class="floating num" data-floating="${esc(it.key)}" type="number" step="0.01" inputmode="decimal" value="${it.floating}">`;
+      const actualCell=it.isEtf?`<span class="faint">¥${fmtMoney(it.actual)}</span><span class="tag plat">自动</span>`:`<input class="actual num" data-actual="${esc(it.key)}" type="number" step="0.01" inputmode="decimal" value="${num(it.actual)?it.actual:''}">`;
+      const floatingCell=it.isEtf?`<span class="${clsNum(it.floating)}">${fmtSigned(it.floating)}</span><span class="tag plat">自动</span>`:`<input class="floating num" data-floating="${esc(it.key)}" type="number" step="0.01" inputmode="decimal" value="${num(it.floating)?it.floating:''}">`;
       return `<tr data-key="${esc(it.key)}"><td>${esc(it.name)}${it.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(it.holdingCode||'')}</span>`:it.isFallback?'<span class="tag">兜底</span>':''}${!it.isEtf?` <button class="icon-btn" data-fill-before="${esc(it.key)}" title="填入上次余额">填入</button>`:''}</td><td class="n">¥${fmtMoney(it.before)}</td><td class="n">${actualCell}</td><td class="n">${floatingCell}</td></tr>`;
     }).join('');
   }).join('');
   const extOpts=flowAccountOptions('',false);
   $('#view-reconcile').innerHTML=`
-  <div class="card"><div class="card-head"><h2>盘点</h2><span class="faint small">${draft.prevSnap?'上次基线：'+esc(draft.prevSnap.date):'首次盘点，无基线'} · 行情：${esc(cache.newest||'未知')}</span><span class="grow"></span><button class="btn small" id="btnOpening">${openingSnapshot()?'编辑期初':'录入期初'}</button><button class="btn small" id="btnReconReset">重置</button></div><div class="filters"><label>盘点日期 <input type="date" id="reconDate" value="${esc(draft.date)}"></label><span class="muted small">${draft.prevSnap?'期间外部资金按基线日之后登记；账户间转账不用记。':'首次盘点以当前余额为起点，期间净流入按 0 计算。'}</span></div></div>
+  <div class="card"><div class="card-head"><h2>盘点${draft.editingSnapId?' · 编辑本次':''}</h2><span class="faint small">${draft.prevSnap?'上次基线：'+esc(draft.prevSnap.date):'首次盘点，无基线'} · 行情：${esc(cache.newest||'未知')}</span><span class="grow"></span><button class="btn small" id="btnEditThis" ${monthSnapshot(String(draft.periodMonth||draft.date).slice(0,7))?'':'disabled'}>编辑本次</button><button class="btn small" id="btnOpening">${openingSnapshot()?'编辑期初':'录入期初'}</button><button class="btn small" id="btnReconReset">重置</button></div>
+  ${state.reconcileDraft?'<div class="note">检测到云端草稿。 <button class="icon-btn" id="btnRestoreDraft">恢复草稿</button> <button class="icon-btn" id="btnDiscardDraft">丢弃草稿</button></div>':''}
+  <div class="filters"><label>盘点日期 <input type="date" id="reconDate" value="${esc(draft.date)}"></label><label>归属月份 <input type="month" id="reconPeriod" value="${esc(String(draft.periodMonth||draft.date).slice(0,7))}"></label><span class="muted small">${draft.prevSnap?'期间外部资金按基线日之后登记；账户间转账不用记。':'首次盘点以当前余额为起点，期间净流入按 0 计算。'}</span></div></div>
   <div class="card step-card"><div class="step-head"><span class="step-num">1</span><h2>外部资金</h2><span class="grow"></span><span class="faint small">只记系统外进出；账户间转账不用登记，消费由总账倒算</span></div><div class="flow-list">${extFlows.length?extFlows.map(flowItemHtml).join(''):'<div class="empty">暂无外部资金</div>'}</div><div class="inline-form"><div class="field"><label>日期</label><input type="date" id="flowDate" value="${esc(draft.date)}"></div><div class="field"><label>方向</label><select id="flowDir"><option value="external_in">流入</option><option value="external_out">流出</option></select></div><div class="field"><label>类别</label><select id="flowCat">${FLOW_CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}</select></div><div class="field"><label>账户</label><select id="flowAcct">${extOpts}</select></div><div class="field"><label>金额</label><input type="number" step="0.01" inputmode="decimal" id="flowAmt" placeholder="0.00"></div><div class="field"><label>备注</label><input id="flowNote" placeholder="可选"></div><button class="btn" id="btnAddFlow">添加</button></div></div>
-  <div class="card step-card"><div class="step-head"><span class="step-num">2</span><h2>盘点余额</h2><span class="grow"></span><button class="btn small" id="btnFillBefore">全部填入上次余额</button></div><div class="table-wrap"><table class="recon-table"><thead><tr><th>二级账户</th><th class="n">上次余额</th><th class="n">本次实际</th><th class="n">浮动盈亏</th></tr></thead><tbody>${rowsHtml||'<tr><td colspan="4" class="empty">还没有账户，请先到账户配置创建二级账户</td></tr>'}</tbody></table></div><div class="summary-strip" id="reconTotals">${reconTotalsStripHtml(t)}</div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">2</span><h2>盘点余额</h2><span class="grow"></span><button class="btn small" id="btnFillBefore">全部填入上次余额</button></div><div class="table-wrap"><table class="recon-table"><thead><tr><th>二级账户</th><th class="n">上次余额</th><th class="n">本次实际</th><th class="n">浮动盈亏</th></tr></thead><tbody>${rowsHtml||'<tr><td colspan="4" class="empty">还没有账户，请先到账户配置创建二级账户</td></tr>'}</tbody></table></div></div>
   <div class="card step-card"><div class="step-head"><span class="step-num">3</span><h2>总账统计</h2><span class="grow"></span><span class="faint small">期初 + 各项变动 = 期末；消费为倒算的日常开支</span></div><div id="reconLedger">${ledgerStatsHtml(t)}</div><div class="note">手工账户的浮动盈亏请填写；证券账户（ETF）自动取数无需填写。账户间转账无需登记。</div></div>
-  <div class="card step-card"><div class="form-grid"><div class="field wide"><label>盘点备注</label><input id="reconNotes" placeholder="可选" value="${esc(draft.notes||'')}"></div></div><div class="form-actions"><button class="btn" id="btnReconCancel">取消</button><button class="btn primary" id="btnReconSave">保存盘点</button></div></div>`;
+  <div class="card step-card"><div class="form-grid"><div class="field wide"><label>盘点备注</label><input id="reconNotes" placeholder="可选" value="${esc(draft.notes||'')}"></div></div><div class="form-actions"><button class="btn" id="btnReconCancel">取消</button><button class="btn" id="btnSaveDraft">存草稿</button><button class="btn primary" id="btnReconSave">保存盘点</button></div></div>`;
   bindReconcileEvents();
 }
 function bindReconcileEvents(){
@@ -962,14 +1022,25 @@ function bindReconcileEvents(){
   if(rd)rd.onchange=e=>{
     const d=e.target.value;
     if(!parseDate(d)){e.target.value=draft.date;return;}
-    const latest=latestSnapshot();
-    if(latest&&String(d)<=String(latest.date)){toast('盘点日期必须晚于上次盘点/期初日期','err');e.target.value=draft.date;return;}
-    const newPrev=snapshotBefore(d);
+    const pm=String(d).slice(0,7);
+    const newPrev=snapshotBeforeFor(d,pm);
     const newFrom=newPrev?newPrev.date:null;
     const outside=draft.flows.filter(f=>String(f.date)>String(d)||(newFrom&&String(f.date)<=String(newFrom)));
     if(outside.length&&!confirm(`有 ${outside.length} 条外部资金不在新盘点期间，将移除。继续？`)){e.target.value=draft.date;return;}
     if(outside.length)draft.flows=draft.flows.filter(f=>!outside.includes(f));
-    draft.date=d;rebuildDraftItems(true);renderReconcile();
+    draft.date=d;draft.periodMonth=pm;draft.prevSnap=newPrev;draft.fromDate=newFrom;
+    const rp=$('#reconPeriod');if(rp)rp.value=pm;
+    rebuildDraftItems(true);renderReconcile();
+  };
+  const rp=$('#reconPeriod');
+  if(rp)rp.onchange=e=>{
+    const pm=String(e.target.value||'').slice(0,7);
+    if(!pm)return;
+    const d=draft.date.slice(0,7)===pm?draft.date:(pm+'-'+String(Math.min(num(draft.date.slice(8,10)),new Date(num(pm.slice(0,4)),num(pm.slice(5,7)),0).getDate())).padStart(2,'0'));
+    const newPrev=snapshotBeforeFor(d,pm);
+    draft.date=d;draft.periodMonth=pm;draft.prevSnap=newPrev;draft.fromDate=newPrev?newPrev.date:null;
+    const rdEl=$('#reconDate');if(rdEl)rdEl.value=d;
+    rebuildDraftItems(true);renderReconcile();
   };
   $$('#view-reconcile [data-actual]').forEach(inp=>inp.oninput=()=>{
     const it=draft.items.find(x=>x.key===inp.dataset.actual);if(!it)return;
@@ -991,12 +1062,15 @@ function bindReconcileEvents(){
   const reset=$('#btnReconReset');if(reset)reset.onclick=()=>{if(confirm('重置本次盘点的临时输入和新增的外部资金？已保存的数据不受影响。')){if(startReconcile(false))renderReconcile();else{draft=null;switchView('dashboard');}}};
   const opening=$('#btnOpening');if(opening)opening.onclick=openOpeningModal;
   const cancel=$('#btnReconCancel');if(cancel)cancel.onclick=()=>{const hasChanges=draft&&(draft.flows.length>0||draft.items.some(it=>Math.abs(it.actual-num(it.before))>0.005||Math.abs(num(it.floating))>0.005)||String(draft.notes||'').trim());if(hasChanges&&!confirm('放弃本次盘点的临时输入？'))return;draft=null;switchView('dashboard');};
+  const saveDraft=$('#btnSaveDraft');if(saveDraft)saveDraft.onclick=saveDraftToCloud;
+  const restore=$('#btnRestoreDraft');if(restore)restore.onclick=()=>startReconcile(true,{fromDraft:true});
+  const discard=$('#btnDiscardDraft');if(discard)discard.onclick=()=>{if(!confirm('丢弃云端草稿？'))return;state.reconcileDraft=null;saveState({backup:true,label:'draft_discard'});renderReconcile();};
+  const editThis=$('#btnEditThis');if(editThis)editThis.onclick=()=>startReconcile(true,{fresh:true,editSnap:(monthSnapshot(String(draft.periodMonth||draft.date).slice(0,7))||{}).id});
   const save=$('#btnReconSave');if(save)save.onclick=saveReconcile;
 }
 function updateReconDerived(){
   if(!draft)return;
   const t=reconTotals();
-  const strip=$('#reconTotals');if(strip)strip.innerHTML=reconTotalsStripHtml(t);
   const ledger=$('#reconLedger');if(ledger)ledger.innerHTML=ledgerStatsHtml(t);
   const gTotals={};const gFloating={};
   draft.items.forEach(it=>{gTotals[it.parentId]=(gTotals[it.parentId]||0)+num(it.actual);gFloating[it.parentId]=(gFloating[it.parentId]||0)+num(it.floating);});
@@ -1019,24 +1093,39 @@ function deleteDraftFlow(id,isDraft){
   else{state.flows=state.flows.filter(f=>f.id!==id);saveState({backup:true,label:'flow_delete'});}
   rebuildDraftItems(true);renderReconcile();
 }
+function saveDraftToCloud(){
+  if(!draft)return toast('没有可保存的盘点草稿','err');
+  state.reconcileDraft=JSON.parse(JSON.stringify({date:draft.date,periodMonth:draft.periodMonth,fromDate:draft.fromDate,flows:draft.flows,items:draft.items,notes:draft.notes,editingSnapId:draft.editingSnapId||null}));
+  saveState({backup:true,label:'draft_save'});
+  toast('草稿已存到云端，可随时回来继续','ok');
+}
 function saveReconcile(){
   if(!draft)return;
   const date=draft.date;
   if(!parseDate(date))return toast('请选择有效的盘点日期','err');
-  const latest=latestSnapshot();
-  if(latest&&String(date)<=String(latest.date))return toast('盘点日期必须晚于上次盘点/期初日期','err');
+  const pm=String(draft.periodMonth||date).slice(0,7);
+  if(pm!==String(date).slice(0,7))return toast('归属月份须与盘点日期所在月份一致','err');
   const badFlow=draft.flows.find(f=>String(f.date)>String(date)||(draft.fromDate&&String(f.date)<=String(draft.fromDate)));
   if(badFlow)return toast('有外部资金的日期不在本次盘点期间，请调整盘点日期或重置本次盘点','err');
   if(!draft.items.length)return toast('没有可盘点的账户，请先到账户配置创建二级账户','err');
   const t=reconTotals();
   const items=draft.items.map(it=>({key:it.key,accountId:it.isEtf?null:it.id,holdingCode:it.holdingCode||null,parentId:it.parentId,groupName:it.groupName,name:it.name,categoryId:it.categoryId||null,before:num(it.before),netFlow:num(it.netFlow),expected:num(it.expected),actual:num(it.actual),floating:num(it.floating),isEtf:!!it.isEtf,isFallback:!!it.isFallback}));
-  const snap={id:uid(),date,type:'reconcile',createdAt:nowISO(),totalAssets:t.totalAssets,floatingTotal:t.floatingTotal,externalNet:t.externalNet,externalCategories:t.externalCategories,floatingChange:t.floatingChange,consumption:t.consumption,ledgerV:1,fromDate:draft.fromDate,notes:draft.notes||'',items};
+  const existing=monthSnapshot(pm);
+  const snapId=existing?existing.id:uid();
+  const snap={id:snapId,date,periodMonth:pm,type:'reconcile',createdAt:nowISO(),totalAssets:t.totalAssets,floatingTotal:t.floatingTotal,externalNet:t.externalNet,externalCategories:t.externalCategories,floatingChange:t.floatingChange,consumption:t.consumption,ledgerV:1,fromDate:draft.fromDate,notes:draft.notes||'',items};
   items.forEach(it=>{if(it.isEtf)return;const leaf=allLeaves().find(l=>l.id===it.accountId);if(leaf)leaf.amount=it.actual;});
-  const committed=draft.flows.map(f=>({...f,snapshotId:snap.id}));
+  if(existing){
+    state.flows=state.flows.filter(f=>f.snapshotId!==snapId);
+    const idx=state.snapshots.findIndex(s=>s.id===snapId);
+    if(idx>=0)state.snapshots[idx]=snap;else state.snapshots.push(snap);
+  }else{
+    state.snapshots.push(snap);
+  }
+  const committed=draft.flows.map(f=>({...f,snapshotId:snapId}));
   state.flows.push(...committed);
-  state.snapshots.push(snap);
   state.snapshots.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   state.settings.lastReconcileDate=date;
+  state.reconcileDraft=null;
   saveState({backup:true,label:'reconcile'});
   draft=null;
   renderAll();switchView('dashboard');
@@ -1078,7 +1167,7 @@ function openOpeningModal(){
   rows.forEach(r=>{if(!byGroup.has(r.parentId))byGroup.set(r.parentId,[]);byGroup.get(r.parentId).push(r);});
   const groupHtml=[...byGroup.entries()].map(([gid,list])=>{
     const g=groupById(gid)||{name:groupName(gid)};
-    return `<div class="card" style="margin-bottom:10px"><div class="card-head"><h2>${esc(g.name)}</h2><span class="grow"></span><span class="faint small num" data-group-total="${esc(gid)}">小计 ¥0.00</span></div><div class="table-wrap"><table><thead><tr><th>二级账户</th><th class="n">期初金额</th><th class="n">浮动盈亏</th></tr></thead><tbody>${list.map(r=>`<tr><td>${esc(r.name)}${r.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(r.holdingCode||'')}</span>`:r.isFallback?'<span class="tag">兜底</span>':''}</td><td class="n"><input class="actual num" data-open-key="${esc(r.key)}" data-open-group="${esc(r.parentId)}" data-open-cur="${r.current}" type="number" step="0.01" inputmode="decimal" value="${r.value}"></td><td class="n">${r.isEtf?`<span class="${clsNum(r.floating)}">${fmtSigned(r.floating)}</span><span class="tag plat">自动</span>`:`<input class="floating num" data-open-floating="${esc(r.key)}" data-open-group="${esc(r.parentId)}" type="number" step="0.01" inputmode="decimal" value="${r.floating}">`}</td></tr>`).join('')}</tbody></table></div></div>`;
+    return `<div class="card" style="margin-bottom:10px"><div class="card-head"><h2>${esc(g.name)}</h2><span class="grow"></span><span class="faint small num" data-group-total="${esc(gid)}">小计 ¥0.00</span></div><div class="table-wrap"><table><thead><tr><th>二级账户</th><th class="n">期初金额</th><th class="n">浮动盈亏</th></tr></thead><tbody>${list.map(r=>`<tr><td>${esc(r.name)}${r.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(r.holdingCode||'')}</span>`:r.isFallback?'<span class="tag">兜底</span>':''}</td><td class="n"><input class="actual num" data-open-key="${esc(r.key)}" data-open-group="${esc(r.parentId)}" data-open-cur="${r.current}" type="number" step="0.01" inputmode="decimal" value="${num(r.value)?r.value:''}"></td><td class="n">${r.isEtf?`<span class="${clsNum(r.floating)}">${fmtSigned(r.floating)}</span><span class="tag plat">自动</span>`:`<input class="floating num" data-open-floating="${esc(r.key)}" data-open-group="${esc(r.parentId)}" type="number" step="0.01" inputmode="decimal" value="${num(r.floating)?r.floating:''}">`}</td></tr>`).join('')}</tbody></table></div></div>`;
   }).join('');
   const noManual=!rows.some(r=>!r.isEtf&&!r.isFallback);
   const ov=openModal(`<div class="modal-head"><h3>${existing?'编辑期初':'录入期初'}</h3></div><div class="note">按该日期的实际余额填写。金额可正可负：资产填正数，负债填负数。浮动盈亏：盈为正、亏为负，没有此概念的账户填 0，作为总账等式的起点。</div>${noManual?'<div class="note">还没有手工账户，可先到账户配置创建，或直接填写证券账户总额/刷新 ETF。</div>':''}<div class="filters"><label>期初日期 <input type="date" id="openDate" value="${esc(openingDate)}"></label><span class="faint small">建议：上一个自然月最后一天</span></div>${groupHtml}<div class="summary-strip" id="openTotals"></div><div class="form-actions">${noManual?'<button class="btn" id="btnOpeningGoAccounts">去账户配置</button>':''}<button class="btn" id="btnOpenFill">填入当前余额</button><button class="btn" id="btnOpenZero">清空</button><span class="grow"></span><button class="btn" data-close>取消</button><button class="btn primary" id="btnSaveOpening">确定</button></div>`,{wide:true});
@@ -1110,17 +1199,19 @@ function saveOpeningBaseline(rows){
   const hasEtf=rows.some(r=>r.isEtf);
   const hasFallbackValue=rows.some(r=>r.isFallback&&Math.abs(vals[r.key])>0.005);
   if(!hasManual&&!hasEtf&&!hasFallbackValue)return toast('还没有账户或金额，请先创建手工账户或刷新 ETF','err');
-  if(state.snapshots.length&&!confirm(`保存后将删除现有期初及之后的所有盘点记录（共 ${state.snapshots.length} 条）。继续？`))return;
   backupState('before_opening');
   rows.forEach(r=>{if(r.isEtf)return;const leaf=allLeaves().find(l=>l.id===r.id);if(leaf)leaf.amount=vals[r.key];});
   const items=rows.map(r=>({key:r.key,accountId:r.isEtf?null:r.id,holdingCode:r.holdingCode||null,parentId:r.parentId,groupName:r.groupName,name:r.name,categoryId:r.categoryId||null,before:vals[r.key],netFlow:0,expected:vals[r.key],actual:vals[r.key],floating:fl[r.key]||0,isEtf:!!r.isEtf,isFallback:!!r.isFallback}));
   const total=items.reduce((s,x)=>s+num(x.actual),0);
   const flTotal=items.reduce((s,x)=>s+num(x.floating),0);
-  state.snapshots=[{id:uid(),date,type:'opening',createdAt:nowISO(),totalAssets:total,floatingTotal:flTotal,externalNet:0,externalCategories:{income:0,expense:0,other:0},floatingChange:0,consumption:0,ledgerV:1,fromDate:null,notes:'期初',items}];
+  const openSnap={id:uid(),date,periodMonth:String(date).slice(0,7),type:'opening',createdAt:nowISO(),totalAssets:total,floatingTotal:flTotal,externalNet:0,externalCategories:{income:0,expense:0,other:0},floatingChange:0,consumption:0,ledgerV:1,fromDate:null,notes:'期初',items};
+  const oi=state.snapshots.findIndex(s=>s.type==='opening');
+  if(oi>=0)state.snapshots[oi]=openSnap;else state.snapshots.push(openSnap);
+  state.snapshots.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   state.settings.lastReconcileDate=date;
   saveState({backup:true,label:'opening'});
   closeModal();draft=null;renderAll();switchView('dashboard');
-  toast(`期初已保存：${date} · 总资产 ¥${fmtMoney(total)} · 浮动盈亏 ${fmtSigned(flTotal)}`,'ok');
+  toast(`期初已更新：${date} · 总资产 ¥${fmtMoney(total)} · 浮动盈亏 ${fmtSigned(flTotal)}。后续盘点记录已保留，基线以新期初为准。`,'ok');
 }
 
 function nextCategoryColor(gs){
@@ -1485,6 +1576,9 @@ function runSelfTest(){
   ok('ETF 市值按份额×现价',()=>Math.abs(holdingMV({shares:100,currentPrice:1.5})-150)<1e-9);
   ok('ETF 浮盈不被旧草稿覆盖',()=>{const savedDraft=draft,savedState=state;state={...state,imports:[{id:'t',importedAt:nowISO(),source:'invPlatformData_v1',mode:'test',holdings:[{code:'510300',name:'测试ETF',shares:1000,avgCost:3.8,currentPrice:4.2,floating:400,lastUpdate:today(),order:0}]}],accounts:[],settings:state.settings,version:2};draft={date:today(),fromDate:null,prevSnap:null,flows:[],notes:'',items:[]};const fresh=buildReconItems(null,draft);const etf=fresh.find(x=>x.isEtf);draft.items=fresh.map(x=>({...x,floating:0}));rebuildDraftItems(true);const after=draft.items.find(x=>x.isEtf);draft=savedDraft;state=savedState;return !!etf&&Math.abs(etf.floating-400)<1e-9&&!!after&&Math.abs(after.floating-400)<1e-9;});
   ok('竖式等式自洽：期初+贡献=期末',()=>{const prevTotal=100000,income=20000,expense=-30000,other=0,floatingChange=3000,consumption=5000;const totalAssets=prevTotal+income+expense+other+floatingChange-consumption;const contributions=[income,expense,other,floatingChange,-consumption].reduce((s,v)=>s+v,0);return Math.abs(prevTotal+contributions-totalAssets)<1e-9;});
+  ok('空金额按 0 处理',()=>num('')===0&&num(null)===0&&num('0')===0);
+  ok('按月基线取上一个有记录月',()=>{const saved=state;state={...state,snapshots:[{id:'o',date:'2026-10-31',periodMonth:'2026-10',type:'opening',totalAssets:100,items:[]},{id:'n',date:'2026-11-20',periodMonth:'2026-11',type:'reconcile',totalAssets:120,items:[]}]};const b=snapshotBeforeFor('2026-11-28','2026-11');state=saved;return !!b&&b.id==='o';});
+  ok('缺月平摊守恒',()=>{const mkOf=i=>Math.floor(i/12)+'-'+String((i%12)+1).padStart(2,'0');const b=monthIndex(mkOf(0)),p=monthIndex(mkOf(2));const span=p-b;const total=6000,per=total/span;let sum=0;for(let k=1;k<=span;k++)sum+=per;return Math.abs(sum-total)<1e-9;});
   ok('本机缓存可用',()=>{try{localStorage.setItem('__dd_test__','1');localStorage.removeItem('__dd_test__');return true;}catch(e){return false;}});
   ok('云端连接',()=>!!sb&&!!currentUser&&sessionReady);
   ok('数据完整性',()=>state.version===2&&Array.isArray(state.accounts)&&new Set(state.accounts.map(a=>a.id)).size===state.accounts.length);
