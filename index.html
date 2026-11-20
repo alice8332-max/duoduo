@@ -161,7 +161,7 @@ label{font-size:12px;color:var(--muted)}
 .field{display:flex;flex-direction:column;gap:4px}.field input,.field select{width:100%}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-grid .wide{grid-column:1/-1}
 .form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}.form-actions .grow{flex:1}
-.recon-table input.actual{width:112px;text-align:right}.recon-table input.grams{width:82px;text-align:right}.recon-table select{max-width:120px}
+.recon-table input.actual{width:112px;text-align:right}.recon-table input.floating{width:96px;text-align:right}.recon-table input.grams{width:82px;text-align:right}.recon-table select{max-width:120px}
 .summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
 .summary-strip .box{background:var(--card2);border-radius:9px;padding:10px 12px}
 .summary-strip .box .lbl{font-size:11px;color:var(--muted)}
@@ -276,7 +276,7 @@ const LEGACY_KEY='ddData_v1_legacy_20261120';
 const LEGACY_BANNER_KEY='ddLegacyBannerDismissed_v1';
 const CORRUPT_KEY='ddData_v1_corrupted_backup';
 const SYNC_KEY='ddSyncMeta_v1';
-const BUILD='v0.4.0-20261120';
+const BUILD='v0.5.0-20261120';
 const PLATFORM_KEY='invPlatformData_v1';
 const PLATFORM_URL='https://alice8332-max.github.io/ftest/';
 const SUPABASE_URL='https://gqjbtbxtkiptjeryqawd.supabase.co';
@@ -362,7 +362,7 @@ function normalizeV2(raw){
   Object.keys(s.holdingSettings||{}).forEach(code=>{const v=s.holdingSettings[code]||{};hs[String(code)]={categoryId:v.categoryId&&catIds.has(String(v.categoryId))?String(v.categoryId):null,order:num(v.order)||0};});
   s.holdingSettings=hs;
   s.imports=Array.isArray(s.imports)?s.imports.filter(i=>i&&Array.isArray(i.holdings)).map(i=>({id:String(i.id||uid()),importedAt:String(i.importedAt||nowISO()),source:String(i.source||'invPlatformData_v1'),mode:String(i.mode||'manual'),holdings:i.holdings.map(h=>({code:String(h.code||''),name:String(h.name||h.code||''),shares:num(h.shares),avgCost:num(h.avgCost),currentPrice:num(h.currentPrice),lastUpdate:String(h.lastUpdate||'').slice(0,10),order:num(h.order)||0})).filter(h=>h.code)})).sort((a,b)=>String(a.importedAt).localeCompare(String(b.importedAt))):[];
-  s.snapshots=Array.isArray(s.snapshots)?s.snapshots.filter(x=>x&&x.date).map(x=>({...x,id:String(x.id||uid()),date:String(x.date),type:(x.type==='opening'||x.opening)?'opening':'reconcile',items:Array.isArray(x.items)?x.items:[]})).sort((a,b)=>String(a.date).localeCompare(String(b.date))):[];
+  s.snapshots=Array.isArray(s.snapshots)?s.snapshots.filter(x=>x&&x.date).map(x=>({...x,id:String(x.id||uid()),date:String(x.date),type:(x.type==='opening'||x.opening)?'opening':'reconcile',floatingTotal:num(x.floatingTotal)||0,externalNet:num(x.externalNet)||0,floatingChange:num(x.floatingChange)||0,ledgerV:num(x.ledgerV)||0,items:Array.isArray(x.items)?x.items.map(it=>({...it,floating:num(it&&it.floating)||0})):[]})).sort((a,b)=>String(a.date).localeCompare(String(b.date))):[];
   s.flows=Array.isArray(s.flows)?s.flows.filter(f=>f&&f.date).map(f=>({id:String(f.id||uid()),date:String(f.date),type:['external_in','external_out','transfer'].includes(f.type)?f.type:'external_in',amount:num(f.amount),fromKey:f.fromKey||f.fromAccountId||null,toKey:f.toKey||f.toAccountId||null,note:String(f.note||''),createdAt:String(f.createdAt||nowISO()),snapshotId:f.snapshotId||null})):[];
   return s;
 }
@@ -719,26 +719,30 @@ function netFlowForKey(d,key){
     const amt=num(f.amount);
     if(f.type==='external_in'&&f.toKey===key)sum+=amt;
     if(f.type==='external_out'&&f.fromKey===key)sum-=amt;
-    if(f.type==='transfer'){if(f.toKey===key)sum+=amt;if(f.fromKey===key)sum-=amt;}
   });
   return sum;
+}
+function externalNetForDraft(d){
+  if(!d||!d.fromDate)return 0;
+  return periodFlowList(d).reduce((s,f)=>s+(f.type==='external_in'?num(f.amount):f.type==='external_out'?-num(f.amount):0),0);
 }
 function findSnapItem(snap,key){return snap&&Array.isArray(snap.items)?snap.items.find(it=>it.key===key)||null:null;}
 function buildReconItems(prevSnap,d){
   const items=[];
+  const floatingOf=key=>{const p=findSnapItem(prevSnap,key);return p&&p.floating!==undefined?num(p.floating):0;};
   visibleLeaves().filter(l=>!l.isEtf).forEach(l=>{
     const key='a:'+l.id;
     const prev=findSnapItem(prevSnap,key);
     const before=prevSnap?(prev?num(prev.actual):0):num(l.amount);
     const netFlow=netFlowForKey(d,key);
-    items.push({key,id:l.id,holdingCode:null,parentId:l.parentId,groupName:groupName(l.parentId),name:l.name,categoryId:l.categoryId||null,before,netFlow,expected:before+netFlow,actual:num(l.amount),isEtf:false,isFallback:!!l.fallback,explanation:null});
+    items.push({key,id:l.id,holdingCode:null,parentId:l.parentId,groupName:groupName(l.parentId),name:l.name,categoryId:l.categoryId||null,before,netFlow,expected:before+netFlow,actual:num(l.amount),floating:floatingOf(key),isEtf:false,isFallback:!!l.fallback,explanation:null});
   });
   etfItems().forEach(e=>{
     const key=e.key;
     const prev=findSnapItem(prevSnap,key);
     const before=prevSnap?(prev?num(prev.actual):0):num(e.amount);
     const netFlow=netFlowForKey(d,key);
-    items.push({key,id:null,holdingCode:e.holdingCode,parentId:e.parentId,groupName:groupName(e.parentId),name:e.name,categoryId:e.categoryId||null,before,netFlow,expected:before+netFlow,actual:num(e.amount),isEtf:true,isFallback:false,explanation:null});
+    items.push({key,id:null,holdingCode:e.holdingCode,parentId:e.parentId,groupName:groupName(e.parentId),name:e.name,categoryId:e.categoryId||null,before,netFlow,expected:before+netFlow,actual:num(e.amount),floating:floatingOf(key),isEtf:true,isFallback:false,explanation:null});
   });
   return items;
 }
@@ -752,10 +756,8 @@ function rebuildDraftItems(preserve){
     const o=old.get(it.key);
     if(o){
       if(!it.isEtf&&preserve)it.actual=o.actual;
-      it.explanation=o.explanation;
+      it.floating=num(o.floating);
     }
-    if(Math.abs(it.actual-it.expected)<=0.005)it.explanation=null;
-    else if(!it.explanation)it.explanation='unexplained';
   });
   draft.items=fresh;
 }
@@ -767,28 +769,24 @@ function startReconcile(render){
   const prevSnap=snapshotBefore(date);
   draft={date,fromDate:prevSnap?prevSnap.date:null,prevSnap,flows:[],items:[],notes:''};
   draft.items=buildReconItems(prevSnap,draft);
-  draft.items.forEach(it=>{if(Math.abs(it.actual-it.expected)>0.005)it.explanation='unexplained';});
   if(render!==false)renderReconcile();
   return true;
 }
 function reconTotals(){
   const items=draft?draft.items:[];
-  const actual=items.reduce((s,it)=>s+num(it.actual),0);
-  const diff=items.reduce((s,it)=>s+(num(it.actual)-num(it.expected)),0);
-  let consumption=0,floating=0,other=0,unexplained=0;
-  items.forEach(it=>{
-    const d=num(it.actual)-num(it.expected);
-    if(Math.abs(d)<=0.005)return;
-    const e=it.explanation||'unexplained';
-    if(e==='consumption')consumption+=-d;
-    else if(e==='floating')floating+=d;
-    else if(e==='other')other+=d;
-    else unexplained+=d;
-  });
-  return {actual,diff,consumption,floating,other,unexplained};
+  const totalAssets=items.reduce((s,it)=>s+num(it.actual),0);
+  const floatingTotal=items.reduce((s,it)=>s+num(it.floating),0);
+  const prevSnap=draft?draft.prevSnap:null;
+  const prevTotal=prevSnap?num(prevSnap.totalAssets):items.reduce((s,it)=>s+num(it.before),0);
+  const prevFloating=prevSnap?num(prevSnap.floatingTotal||0):0;
+  const externalNet=externalNetForDraft(draft);
+  const floatingChange=floatingTotal-prevFloating;
+  const consumption=prevTotal+externalNet+floatingChange-totalAssets;
+  const before=items.reduce((s,it)=>s+num(it.before),0);
+  const net=items.reduce((s,it)=>s+num(it.netFlow),0);
+  return {totalAssets,actual:totalAssets,floatingTotal,prevTotal,prevFloating,externalNet,floatingChange,consumption,before,net,diff:totalAssets-prevTotal-externalNet-floatingChange};
 }
 function explainLabel(id){const x=EXPLANATIONS.find(e=>e.id===id);return x?x.label:'未解释';}
-function explainOptionsHtml(sel){return EXPLANATIONS.map(e=>`<option value="${e.id}" ${sel===e.id?'selected':''}>${e.label}</option>`).join('');}
 function flowAccountName(key){
   if(!key)return '—';
   if(key.startsWith('a:')){const l=allLeaves().find(x=>x.id===key.slice(2));return l?l.name:'—';}
@@ -806,19 +804,11 @@ function flowItemHtml(f){
   else detail=`${flowAccountName(f.fromKey)} →`;
   return `<div class="flow-item"><span class="faint">${esc(f.date)}</span><span>${dir}</span><span>${esc(detail)}</span><span class="grow"></span><span class="num">¥${fmtMoney(f.amount)}</span>${f.note?`<span class="faint">${esc(f.note)}</span>`:''}<button class="icon-btn danger" data-del-flow="${esc(f.id)}" data-draft="${f._draft?'1':'0'}">删除</button></div>`;
 }
-function reconExplainRowsHtml(){
-  if(!draft)return '';
-  const list=draft.items.filter(it=>Math.abs(num(it.actual)-num(it.expected))>0.005);
-  if(!list.length)return '<div class="empty">没有差额需要解释</div>';
-  return list.map(it=>`<div class="explain-row"><span class="nm">${esc(it.groupName)}</span><span class="nm">${esc(it.name)}</span><span class="num ${clsNum(it.actual-it.expected)}">${fmtSigned(it.actual-it.expected)}</span><select data-exp="${esc(it.key)}">${explainOptionsHtml(it.explanation||'unexplained')}</select></div>`).join('');
-}
-function reconExplainTotalsHtml(t){
-  return `<div class="box"><div class="lbl">消费合计</div><div class="val num">¥${fmtMoney(t.consumption)}</div></div><div class="box"><div class="lbl">浮盈浮亏</div><div class="val num ${clsNum(t.floating)}">${fmtSigned(t.floating)}</div></div><div class="box"><div class="lbl">其他</div><div class="val num ${clsNum(t.other)}">${fmtSigned(t.other)}</div></div><div class="box"><div class="lbl">未解释</div><div class="val num ${clsNum(t.unexplained)}">${fmtSigned(t.unexplained)}</div></div><div class="box"><div class="lbl">差额合计</div><div class="val num ${clsNum(t.diff)}">${fmtSigned(t.diff)}</div></div>`;
+function ledgerStatsHtml(t){
+  return `<div class="box"><div class="lbl">期初总资产</div><div class="val num">¥${fmtMoney(t.prevTotal)}</div></div><div class="box"><div class="lbl">期初浮动盈亏</div><div class="val num ${clsNum(t.prevFloating)}">${fmtSigned(t.prevFloating)}</div></div><div class="box"><div class="lbl">期间外部净流入</div><div class="val num ${clsNum(t.externalNet)}">${fmtSigned(t.externalNet)}</div></div><div class="box"><div class="lbl">期末总资产</div><div class="val num">¥${fmtMoney(t.totalAssets)}</div></div><div class="box"><div class="lbl">期末浮动盈亏</div><div class="val num ${clsNum(t.floatingTotal)}">${fmtSigned(t.floatingTotal)}</div></div><div class="box"><div class="lbl">本期浮动盈亏变化</div><div class="val num ${clsNum(t.floatingChange)}">${fmtSigned(t.floatingChange)}</div></div><div class="box"><div class="lbl">本期消费（倒算，可为负）</div><div class="val num ${clsNum(t.consumption)}">${fmtSigned(t.consumption)}</div></div>`;
 }
 function reconTotalsStripHtml(t){
-  const before=draft?draft.items.reduce((s,it)=>s+num(it.before),0):0;
-  const net=draft?draft.items.reduce((s,it)=>s+num(it.netFlow),0):0;
-  return `<div class="box"><div class="lbl">上次余额合计</div><div class="val num">¥${fmtMoney(before)}</div></div><div class="box"><div class="lbl">期间净流入合计</div><div class="val num">${fmtSigned(net)}</div></div><div class="box"><div class="lbl">本次总资产</div><div class="val num">¥${fmtMoney(t.actual)}</div></div><div class="box"><div class="lbl">差额合计</div><div class="val num ${clsNum(t.diff)}">${fmtSigned(t.diff)}</div></div>`;
+  return `<div class="box"><div class="lbl">期初总资产</div><div class="val num">¥${fmtMoney(t.prevTotal)}</div></div><div class="box"><div class="lbl">期末总资产</div><div class="val num">¥${fmtMoney(t.totalAssets)}</div></div><div class="box"><div class="lbl">期末浮动盈亏合计</div><div class="val num ${clsNum(t.floatingTotal)}">${fmtSigned(t.floatingTotal)}</div></div><div class="box"><div class="lbl">期间外部净流入</div><div class="val num ${clsNum(t.externalNet)}">${fmtSigned(t.externalNet)}</div></div>`;
 }
 
 function renderAll(){
@@ -862,7 +852,7 @@ function renderDashboard(){
   }else if(!opening&&!hasReconcile){
     guide=`<div class="card" style="margin-bottom:14px"><div class="card-head"><h2>录入期初</h2><span class="grow"></span><button class="btn small primary" id="btnOpeningGuide">录入期初</button></div><div class="small muted">按上一个自然月最后一天的实际余额录入，作为第一次盘点的起点。</div></div>`;
   }else if(opening&&!hasReconcile){
-    guide=`<div class="card" style="margin-bottom:14px"><div class="card-head"><h2>开始盘点</h2><span class="grow"></span><button class="btn small primary" id="btnStartGuide">开始盘点</button></div><div class="small muted">期初：${esc(opening.date)}。记录外部资金和转账后，填写各账户实际余额。</div></div>`;
+    guide=`<div class="card" style="margin-bottom:14px"><div class="card-head"><h2>开始盘点</h2><span class="grow"></span><button class="btn small primary" id="btnStartGuide">开始盘点</button></div><div class="small muted">期初：${esc(opening.date)}。记录外部资金后，填写各账户实际余额和浮动盈亏。</div></div>`;
   }
   const segs=alloc.rows.filter(r=>r.amount>0).map(r=>`<div class="alloc-seg" style="flex:${r.pct||0};background:${esc(r.color)}" title="${esc(r.name)} ${r.pct==null?'--':fmtPct(r.pct)}"></div>`).join('');
   const allocRows=alloc.rows.length?alloc.rows.map(r=>`<div class="alloc-row"><span class="dot" style="background:${esc(r.color)}"></span><span class="nm">${esc(r.name)}</span><span class="num">¥${fmtMoney(r.amount)}</span><span class="pct num">${r.pct==null?'--':fmtPct(r.pct)}</span></div>`).join(''):'<div class="empty">还没有配置类别/账户</div>';
@@ -874,7 +864,7 @@ function renderDashboard(){
   </div>
   <div class="grid dash-top">
     <div class="card"><div class="card-head"><h2>资产配置</h2><span class="faint small">${total>0?'占比按总资产':'总资产 ≤ 0，占比暂不计算'}</span><span class="grow"></span><button class="btn small" data-go="accounts">账户配置</button></div><div class="alloc-stack">${segs||'<div class="alloc-seg" style="flex:1;background:#eef0f4"></div>'}</div><div class="alloc-list">${allocRows}</div>${total<=0?'<div class="note warn">总资产小于等于 0，资产配置占比暂不计算。</div>':''}</div>
-    <div class="card"><div class="card-head"><h2>本月消耗</h2><span class="faint small">${monthKey(today())}</span><span class="grow"></span><button class="btn small" data-go="reconcile">去盘点</button></div><div class="consumption2"><div class="cons-main"><div class="big num">¥${fmtMoney(cons)}</div><div class="line">${state.snapshots.some(s=>s.type==='reconcile')?'当月盘点中解释为“消费”的差额合计':'还没有盘点记录'}</div></div><div><div class="trend-bars">${trendBars}</div><div class="legend"><span>近 6 个月盘点消耗</span></div></div></div></div>
+    <div class="card"><div class="card-head"><h2>本月消耗</h2><span class="faint small">${monthKey(today())}</span><span class="grow"></span><button class="btn small" data-go="reconcile">去盘点</button></div><div class="consumption2"><div class="cons-main"><div class="big num">¥${fmtMoney(cons)}</div><div class="line">${state.snapshots.some(s=>s.type==='reconcile')?'当月盘点总账等式倒算，可为负':'还没有盘点记录'}</div></div><div><div class="trend-bars">${trendBars}</div><div class="legend"><span>近 6 个月盘点消耗</span></div></div></div></div>
   </div>`;
   $$('#view-dashboard [data-go]').forEach(b=>b.onclick=()=>switchView(b.dataset.go));
   const og=$('#btnOpeningGuide');if(og)og.onclick=openOpeningModal;
@@ -891,32 +881,26 @@ function renderReconcile(){
   const t=reconTotals();
   const flows=periodFlowList(draft);
   const extFlows=flows.filter(f=>f.type!=='transfer');
-  const transfers=flows.filter(f=>f.type==='transfer');
   const groupMap=new Map();
   draft.items.forEach(it=>{if(!groupMap.has(it.parentId))groupMap.set(it.parentId,[]);groupMap.get(it.parentId).push(it);});
   const ordered=groups().filter(g=>groupMap.has(g.id));
   const rowsHtml=ordered.map(g=>{
     const list=groupMap.get(g.id);
     const sub=list.reduce((s,it)=>s+num(it.actual),0);
-    return `<tr style="background:#f8fafc"><td colspan="6" style="font-weight:650">${esc(g.name)}<span class="tag">${list.length} 项</span><span class="faint small" data-group-sub="${esc(g.id)}" style="float:right">小计 ¥${fmtMoney(sub)}</span></td></tr>`+list.map(it=>{
-      const d=num(it.actual)-num(it.expected);
+    const fl=list.reduce((s,it)=>s+num(it.floating),0);
+    return `<tr style="background:#f8fafc"><td colspan="4" style="font-weight:650">${esc(g.name)}<span class="tag">${list.length} 项</span><span class="faint small" data-group-sub="${esc(g.id)}" style="float:right">小计 ¥${fmtMoney(sub)} · 浮盈浮亏 ${fmtSigned(fl)}</span></td></tr>`+list.map(it=>{
       const actualCell=it.isEtf?`<span class="faint">¥${fmtMoney(it.actual)}</span><span class="tag plat">自动</span>`:`<input class="actual num" data-actual="${esc(it.key)}" type="number" step="0.01" inputmode="decimal" value="${it.actual}">`;
-      return `<tr data-key="${esc(it.key)}"><td>${esc(it.name)}${it.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(it.holdingCode||'')}</span>`:it.isFallback?'<span class="tag">兜底</span>':''}${!it.isEtf?` <button class="icon-btn" data-fill-before="${esc(it.key)}" title="填入上次余额">填入</button>`:''}</td><td class="n">¥${fmtMoney(it.before)}</td><td class="n ${clsNum(it.netFlow)}">${fmtSigned(it.netFlow)}</td><td class="n" data-expected="${esc(it.key)}">¥${fmtMoney(it.expected)}</td><td class="n">${actualCell}</td><td class="n ${clsNum(d)}" data-diff="${esc(it.key)}">${fmtSigned(d)}</td></tr>`;
+      return `<tr data-key="${esc(it.key)}"><td>${esc(it.name)}${it.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(it.holdingCode||'')}</span>`:it.isFallback?'<span class="tag">兜底</span>':''}${!it.isEtf?` <button class="icon-btn" data-fill-before="${esc(it.key)}" title="填入上次余额">填入</button>`:''}</td><td class="n">¥${fmtMoney(it.before)}</td><td class="n">${actualCell}</td><td class="n"><input class="floating num" data-floating="${esc(it.key)}" type="number" step="0.01" inputmode="decimal" value="${it.floating}"></td></tr>`;
     }).join('');
   }).join('');
   const extOpts=flowAccountOptions('',false);
-  const trOpts=flowAccountOptions('',true);
   $('#view-reconcile').innerHTML=`
-  <div class="card"><div class="card-head"><h2>盘点</h2><span class="faint small">${draft.prevSnap?'上次基线：'+esc(draft.prevSnap.date):'首次盘点，无基线'} · 行情：${esc(cache.newest||'未知')}</span><span class="grow"></span><button class="btn small" id="btnOpening">${openingSnapshot()?'编辑期初':'录入期初'}</button><button class="btn small" id="btnReconReset">重置</button></div><div class="filters"><label>盘点日期 <input type="date" id="reconDate" value="${esc(draft.date)}"></label><span class="muted small">${draft.prevSnap?'期间净流入按基线日之后的外部资金和转账计算。':'首次盘点以当前余额为起点，期间净流入按 0 计算。'}</span></div></div>
-  <div class="card step-card"><div class="step-head"><span class="step-num">1</span><h2>外部资金</h2><span class="grow"></span><span class="faint small">只记大额、跨系统的资金进出；日常小额消费留给第 4 步</span></div><div class="flow-list">${extFlows.length?extFlows.map(flowItemHtml).join(''):'<div class="empty">暂无外部资金</div>'}</div><div class="inline-form"><div class="field"><label>日期</label><input type="date" id="flowDate" value="${esc(draft.date)}"></div><div class="field"><label>方向</label><select id="flowDir"><option value="external_in">流入</option><option value="external_out">流出</option></select></div><div class="field"><label>账户</label><select id="flowAcct">${extOpts}</select></div><div class="field"><label>金额</label><input type="number" step="0.01" inputmode="decimal" id="flowAmt" placeholder="0.00"></div><div class="field"><label>备注</label><input id="flowNote" placeholder="可选"></div><button class="btn" id="btnAddFlow">添加</button></div></div>
-  <div class="card step-card"><div class="step-head"><span class="step-num">2</span><h2>账户间转账</h2><span class="grow"></span><span class="faint small">转出减少、转入增加，不影响总资产</span></div><div class="flow-list">${transfers.length?transfers.map(flowItemHtml).join(''):'<div class="empty">暂无转账</div>'}</div><div class="inline-form transfer"><div class="field"><label>日期</label><input type="date" id="trDate" value="${esc(draft.date)}"></div><div class="field"><label>转出</label><select id="trFrom">${trOpts}</select></div><div class="field"><label>转入</label><select id="trTo">${trOpts}</select></div><div class="field"><label>金额</label><input type="number" step="0.01" inputmode="decimal" id="trAmt" placeholder="0.00"></div><div class="field"><label>备注</label><input id="trNote" placeholder="可选"></div><button class="btn" id="btnAddTransfer">添加</button></div></div>
-  <div class="card step-card"><div class="step-head"><span class="step-num">3</span><h2>盘点余额</h2><span class="grow"></span><button class="btn small" id="btnFillBefore">全部填入上次余额</button></div><div class="table-wrap"><table class="recon-table"><thead><tr><th>二级账户</th><th class="n">上次余额</th><th class="n">期间净流入</th><th class="n">应有余额</th><th class="n">本次实际</th><th class="n">差额</th></tr></thead><tbody>${rowsHtml||'<tr><td colspan="6" class="empty">还没有账户，请先到账户配置创建二级账户</td></tr>'}</tbody></table></div><div class="summary-strip" id="reconTotals">${reconTotalsStripHtml(t)}</div></div>
-  <div class="card step-card"><div class="step-head"><span class="step-num">4</span><h2>差异解释</h2><span class="grow"></span><button class="btn small" id="btnAllUnexplained">全部标为未解释</button></div><div class="explain-list" id="reconExplainBody">${reconExplainRowsHtml()}</div><div class="summary-strip five" id="reconExplainTotals">${reconExplainTotalsHtml(t)}</div></div>
+  <div class="card"><div class="card-head"><h2>盘点</h2><span class="faint small">${draft.prevSnap?'上次基线：'+esc(draft.prevSnap.date):'首次盘点，无基线'} · 行情：${esc(cache.newest||'未知')}</span><span class="grow"></span><button class="btn small" id="btnOpening">${openingSnapshot()?'编辑期初':'录入期初'}</button><button class="btn small" id="btnReconReset">重置</button></div><div class="filters"><label>盘点日期 <input type="date" id="reconDate" value="${esc(draft.date)}"></label><span class="muted small">${draft.prevSnap?'期间外部资金按基线日之后登记；账户间转账不用记。':'首次盘点以当前余额为起点，期间净流入按 0 计算。'}</span></div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">1</span><h2>外部资金</h2><span class="grow"></span><span class="faint small">只记系统外进出；账户间转账不用登记，消费由总账倒算</span></div><div class="flow-list">${extFlows.length?extFlows.map(flowItemHtml).join(''):'<div class="empty">暂无外部资金</div>'}</div><div class="inline-form"><div class="field"><label>日期</label><input type="date" id="flowDate" value="${esc(draft.date)}"></div><div class="field"><label>方向</label><select id="flowDir"><option value="external_in">流入</option><option value="external_out">流出</option></select></div><div class="field"><label>账户</label><select id="flowAcct">${extOpts}</select></div><div class="field"><label>金额</label><input type="number" step="0.01" inputmode="decimal" id="flowAmt" placeholder="0.00"></div><div class="field"><label>备注</label><input id="flowNote" placeholder="可选"></div><button class="btn" id="btnAddFlow">添加</button></div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">2</span><h2>盘点余额</h2><span class="grow"></span><button class="btn small" id="btnFillBefore">全部填入上次余额</button></div><div class="table-wrap"><table class="recon-table"><thead><tr><th>二级账户</th><th class="n">上次余额</th><th class="n">本次实际</th><th class="n">浮动盈亏</th></tr></thead><tbody>${rowsHtml||'<tr><td colspan="4" class="empty">还没有账户，请先到账户配置创建二级账户</td></tr>'}</tbody></table></div><div class="summary-strip" id="reconTotals">${reconTotalsStripHtml(t)}</div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">3</span><h2>总账统计</h2><span class="grow"></span><span class="faint small">消费 = 期初总资产 + 外部净流入 + 本期浮动盈亏 − 期末总资产</span></div><div class="summary-strip" id="reconLedger">${ledgerStatsHtml(t)}</div><div class="note">每个账户的浮动盈亏请手工填写：盈为正、亏为负，没有浮动盈亏概念的账户填 0。账户间转账无需登记。</div></div>
   <div class="card step-card"><div class="form-grid"><div class="field wide"><label>盘点备注</label><input id="reconNotes" placeholder="可选" value="${esc(draft.notes||'')}"></div></div><div class="form-actions"><button class="btn" id="btnReconCancel">取消</button><button class="btn primary" id="btnReconSave">保存盘点</button></div></div>`;
   bindReconcileEvents();
-}
-function bindExplainEvents(){
-  $$('#view-reconcile [data-exp]').forEach(sel=>sel.onchange=()=>{const it=draft.items.find(x=>x.key===sel.dataset.exp);if(!it)return;it.explanation=sel.value;updateReconDerived();});
 }
 function bindReconcileEvents(){
   const rd=$('#reconDate');
@@ -928,60 +912,47 @@ function bindReconcileEvents(){
     const newPrev=snapshotBefore(d);
     const newFrom=newPrev?newPrev.date:null;
     const outside=draft.flows.filter(f=>String(f.date)>String(d)||(newFrom&&String(f.date)<=String(newFrom)));
-    if(outside.length&&!confirm(`有 ${outside.length} 条新增资金/转账不在新盘点期间，将移除。继续？`)){e.target.value=draft.date;return;}
+    if(outside.length&&!confirm(`有 ${outside.length} 条外部资金不在新盘点期间，将移除。继续？`)){e.target.value=draft.date;return;}
     if(outside.length)draft.flows=draft.flows.filter(f=>!outside.includes(f));
     draft.date=d;rebuildDraftItems(true);renderReconcile();
   };
   $$('#view-reconcile [data-actual]').forEach(inp=>inp.oninput=()=>{
     const it=draft.items.find(x=>x.key===inp.dataset.actual);if(!it)return;
     it.actual=num(inp.value);
-    const d=it.actual-it.expected;
-    if(Math.abs(d)<=0.005)it.explanation=null;else if(!it.explanation)it.explanation='unexplained';
     updateReconDerived();
   });
-  $$('#view-reconcile [data-fill-before]').forEach(b=>b.onclick=()=>{const it=draft.items.find(x=>x.key===b.dataset.fillBefore);if(!it)return;it.actual=it.before;it.explanation=null;renderReconcile();});
-  bindExplainEvents();
+  $$('#view-reconcile [data-floating]').forEach(inp=>inp.oninput=()=>{
+    const it=draft.items.find(x=>x.key===inp.dataset.floating);if(!it)return;
+    it.floating=num(inp.value);
+    updateReconDerived();
+  });
+  $$('#view-reconcile [data-fill-before]').forEach(b=>b.onclick=()=>{const it=draft.items.find(x=>x.key===b.dataset.fillBefore);if(!it)return;it.actual=it.before;renderReconcile();});
   const addFlow=$('#btnAddFlow');if(addFlow)addFlow.onclick=()=>addDraftFlow('external');
-  const addTr=$('#btnAddTransfer');if(addTr)addTr.onclick=()=>addDraftFlow('transfer');
   $$('#view-reconcile [data-del-flow]').forEach(b=>b.onclick=()=>deleteDraftFlow(b.dataset.delFlow,b.dataset.draft==='1'));
-  const fill=$('#btnFillBefore');if(fill)fill.onclick=()=>{draft.items.forEach(it=>{if(it.isEtf)return;it.actual=it.before;it.explanation=null;});renderReconcile();};
-  const allU=$('#btnAllUnexplained');if(allU)allU.onclick=()=>{draft.items.forEach(it=>{if(Math.abs(it.actual-it.expected)>0.005)it.explanation='unexplained';});renderReconcile();};
+  const fill=$('#btnFillBefore');if(fill)fill.onclick=()=>{draft.items.forEach(it=>{if(it.isEtf)return;it.actual=it.before;});renderReconcile();};
   const notes=$('#reconNotes');if(notes)notes.oninput=e=>draft.notes=e.target.value;
-  const reset=$('#btnReconReset');if(reset)reset.onclick=()=>{if(confirm('重置本次盘点的临时输入和新增的外部资金/转账？已保存的数据不受影响。')){if(startReconcile(false))renderReconcile();else{draft=null;switchView('dashboard');}}};
+  const reset=$('#btnReconReset');if(reset)reset.onclick=()=>{if(confirm('重置本次盘点的临时输入和新增的外部资金？已保存的数据不受影响。')){if(startReconcile(false))renderReconcile();else{draft=null;switchView('dashboard');}}};
   const opening=$('#btnOpening');if(opening)opening.onclick=openOpeningModal;
-  const cancel=$('#btnReconCancel');if(cancel)cancel.onclick=()=>{const hasChanges=draft&&(draft.flows.length>0||draft.items.some(it=>Math.abs(it.actual-it.expected)>0.005)||String(draft.notes||'').trim());if(hasChanges&&!confirm('放弃本次盘点的临时输入？'))return;draft=null;switchView('dashboard');};
+  const cancel=$('#btnReconCancel');if(cancel)cancel.onclick=()=>{const hasChanges=draft&&(draft.flows.length>0||draft.items.some(it=>Math.abs(it.actual-num(it.before))>0.005||Math.abs(num(it.floating))>0.005)||String(draft.notes||'').trim());if(hasChanges&&!confirm('放弃本次盘点的临时输入？'))return;draft=null;switchView('dashboard');};
   const save=$('#btnReconSave');if(save)save.onclick=saveReconcile;
 }
 function updateReconDerived(){
   if(!draft)return;
   const t=reconTotals();
   const strip=$('#reconTotals');if(strip)strip.innerHTML=reconTotalsStripHtml(t);
-  $$('#view-reconcile [data-diff]').forEach(td=>{const it=draft.items.find(x=>x.key===td.dataset.diff);if(!it)return;const d=it.actual-it.expected;td.textContent=fmtSigned(d);td.className='n '+clsNum(d);});
-  const gTotals={};
-  draft.items.forEach(it=>{gTotals[it.parentId]=(gTotals[it.parentId]||0)+num(it.actual);});
-  $$('#view-reconcile [data-group-sub]').forEach(el=>{el.textContent=`小计 ¥${fmtMoney(gTotals[el.dataset.groupSub]||0)}`;});
-  const body=$('#reconExplainBody');if(body)body.innerHTML=reconExplainRowsHtml();
-  const et=$('#reconExplainTotals');if(et)et.innerHTML=reconExplainTotalsHtml(t);
-  bindExplainEvents();
+  const ledger=$('#reconLedger');if(ledger)ledger.innerHTML=ledgerStatsHtml(t);
+  const gTotals={};const gFloating={};
+  draft.items.forEach(it=>{gTotals[it.parentId]=(gTotals[it.parentId]||0)+num(it.actual);gFloating[it.parentId]=(gFloating[it.parentId]||0)+num(it.floating);});
+  $$('#view-reconcile [data-group-sub]').forEach(el=>{const g=el.dataset.groupSub;el.textContent=`小计 ¥${fmtMoney(gTotals[g]||0)} · 浮盈浮亏 ${fmtSigned(gFloating[g]||0)}`;});
 }
 function addDraftFlow(kind){
-  if(!draft)return;
-  if(kind==='external'){
-    const date=$('#flowDate').value||draft.date;const type=$('#flowDir').value;const acct=$('#flowAcct').value;const amt=num($('#flowAmt').value);const note=$('#flowNote').value.trim();
-    if(draft.fromDate&&String(date)<=String(draft.fromDate))return toast('日期必须晚于上次基线日','err');
-    if(String(date)>String(draft.date))return toast('日期不能晚于盘点日期','err');
-    if(!acct)return toast('请选择账户','err');
-    if(amt<=0)return toast('请输入大于 0 的金额','err');
-    draft.flows.push({id:uid(),date,type,amount:amt,fromKey:type==='external_out'?acct:null,toKey:type==='external_in'?acct:null,note,createdAt:nowISO()});
-  }else{
-    const date=$('#trDate').value||draft.date;const from=$('#trFrom').value;const to=$('#trTo').value;const amt=num($('#trAmt').value);const note=$('#trNote').value.trim();
-    if(draft.fromDate&&String(date)<=String(draft.fromDate))return toast('日期必须晚于上次基线日','err');
-    if(String(date)>String(draft.date))return toast('日期不能晚于盘点日期','err');
-    if(!from||!to)return toast('请选择转出和转入账户','err');
-    if(from===to)return toast('转出与转入不能相同','err');
-    if(amt<=0)return toast('请输入大于 0 的金额','err');
-    draft.flows.push({id:uid(),date,type:'transfer',amount:amt,fromKey:from,toKey:to,note,createdAt:nowISO()});
-  }
+  if(!draft||kind!=='external')return;
+  const date=$('#flowDate').value||draft.date;const type=$('#flowDir').value;const acct=$('#flowAcct').value;const amt=num($('#flowAmt').value);const note=$('#flowNote').value.trim();
+  if(draft.fromDate&&String(date)<=String(draft.fromDate))return toast('日期必须晚于上次基线日','err');
+  if(String(date)>String(draft.date))return toast('日期不能晚于盘点日期','err');
+  if(!acct)return toast('请选择账户','err');
+  if(amt<=0)return toast('请输入大于 0 的金额','err');
+  draft.flows.push({id:uid(),date,type,amount:amt,fromKey:type==='external_out'?acct:null,toKey:type==='external_in'?acct:null,note,createdAt:nowISO()});
   rebuildDraftItems(true);renderReconcile();
 }
 function deleteDraftFlow(id,isDraft){
@@ -997,15 +968,11 @@ function saveReconcile(){
   const latest=latestSnapshot();
   if(latest&&String(date)<=String(latest.date))return toast('盘点日期必须晚于上次盘点/期初日期','err');
   const badFlow=draft.flows.find(f=>String(f.date)>String(date)||(draft.fromDate&&String(f.date)<=String(draft.fromDate)));
-  if(badFlow)return toast('有新增资金/转账的日期不在本次盘点期间，请调整盘点日期或重置本次盘点','err');
+  if(badFlow)return toast('有外部资金的日期不在本次盘点期间，请调整盘点日期或重置本次盘点','err');
   if(!draft.items.length)return toast('没有可盘点的账户，请先到账户配置创建二级账户','err');
   const t=reconTotals();
-  const items=draft.items.map(it=>{
-    const diff=num(it.actual)-num(it.expected);
-    const exp=Math.abs(diff)<=0.005?null:(it.explanation||'unexplained');
-    return {key:it.key,accountId:it.isEtf?null:it.id,holdingCode:it.holdingCode||null,parentId:it.parentId,groupName:it.groupName,name:it.name,categoryId:it.categoryId||null,before:num(it.before),netFlow:num(it.netFlow),expected:num(it.expected),actual:num(it.actual),diff,explanation:exp,isEtf:!!it.isEtf,isFallback:!!it.isFallback};
-  });
-  const snap={id:uid(),date,type:'reconcile',createdAt:nowISO(),totalAssets:t.actual,consumption:t.consumption,floatingPnl:t.floating,other:t.other,unexplained:t.unexplained,totalDiff:t.diff,fromDate:draft.fromDate,notes:draft.notes||'',items};
+  const items=draft.items.map(it=>({key:it.key,accountId:it.isEtf?null:it.id,holdingCode:it.holdingCode||null,parentId:it.parentId,groupName:it.groupName,name:it.name,categoryId:it.categoryId||null,before:num(it.before),netFlow:num(it.netFlow),expected:num(it.expected),actual:num(it.actual),floating:num(it.floating),isEtf:!!it.isEtf,isFallback:!!it.isFallback}));
+  const snap={id:uid(),date,type:'reconcile',createdAt:nowISO(),totalAssets:t.totalAssets,floatingTotal:t.floatingTotal,externalNet:t.externalNet,floatingChange:t.floatingChange,consumption:t.consumption,ledgerV:1,fromDate:draft.fromDate,notes:draft.notes||'',items};
   items.forEach(it=>{if(it.isEtf)return;const leaf=allLeaves().find(l=>l.id===it.accountId);if(leaf)leaf.amount=it.actual;});
   const committed=draft.flows.map(f=>({...f,snapshotId:snap.id}));
   state.flows.push(...committed);
@@ -1015,27 +982,27 @@ function saveReconcile(){
   saveState({backup:true,label:'reconcile'});
   draft=null;
   renderAll();switchView('dashboard');
-  const monthCons=monthConsumption();
-  let msg=`盘点已保存，总资产 ¥${fmtMoney(t.actual)}，本月消费 ¥${fmtMoney(monthCons)}。`;
-  if(Math.abs(t.unexplained)>0.005)msg+=` 未解释差额 ¥${fmtMoney(t.unexplained)}。`;
-  toast(msg,Math.abs(t.unexplained)>0.005?'':'ok');
+  let msg=`盘点已保存，总资产 ¥${fmtMoney(t.totalAssets)}，本期消费 ¥${fmtMoney(t.consumption)}，本期浮动盈亏 ${fmtSigned(t.floatingChange)}。`;
+  if(t.consumption<0)msg+=' 本期消费为负，多为退款或外部净流入大于资产增加。';
+  toast(msg,'ok');
 }
 
 function openingRows(){
   const existing=openingSnapshot();
   const rows=[];
+  const floatingOf=key=>{const p=findSnapItem(existing,key);return p&&p.floating!==undefined?num(p.floating):0;};
   groups().forEach(g=>{
     if(g.id===SYSTEM_GROUP_ID){
       const etfs=etfItems();
       if(etfs.length){
-        etfs.forEach(e=>{const prev=findSnapItem(existing,e.key);rows.push({key:e.key,id:null,holdingCode:e.holdingCode,parentId:g.id,groupName:g.name,name:e.name,categoryId:e.categoryId,current:num(e.amount),value:prev?num(prev.actual):num(e.amount),isEtf:true,isFallback:false});});
+        etfs.forEach(e=>{const prev=findSnapItem(existing,e.key);rows.push({key:e.key,id:null,holdingCode:e.holdingCode,parentId:g.id,groupName:g.name,name:e.name,categoryId:e.categoryId,current:num(e.amount),value:prev?num(prev.actual):num(e.amount),floating:floatingOf(e.key),isEtf:true,isFallback:false});});
       }else{
         const fb=allLeaves().find(l=>l.id===FALLBACK_LEAF_ID);
-        if(fb){const key='a:'+fb.id;const prev=findSnapItem(existing,key);rows.push({key,id:fb.id,holdingCode:null,parentId:g.id,groupName:g.name,name:fb.name,categoryId:fb.categoryId,current:num(fb.amount),value:prev?num(prev.actual):num(fb.amount),isEtf:false,isFallback:true});}
+        if(fb){const key='a:'+fb.id;const prev=findSnapItem(existing,key);rows.push({key,id:fb.id,holdingCode:null,parentId:g.id,groupName:g.name,name:fb.name,categoryId:fb.categoryId,current:num(fb.amount),value:prev?num(prev.actual):num(fb.amount),floating:floatingOf(key),isEtf:false,isFallback:true});}
       }
       return;
     }
-    childrenOf(g.id).filter(l=>!l.fallback).forEach(l=>{const key='a:'+l.id;const prev=findSnapItem(existing,key);rows.push({key,id:l.id,holdingCode:null,parentId:g.id,groupName:g.name,name:l.name,categoryId:l.categoryId,current:num(l.amount),value:prev?num(prev.actual):num(l.amount),isEtf:false,isFallback:false});});
+    childrenOf(g.id).filter(l=>!l.fallback).forEach(l=>{const key='a:'+l.id;const prev=findSnapItem(existing,key);rows.push({key,id:l.id,holdingCode:null,parentId:g.id,groupName:g.name,name:l.name,categoryId:l.categoryId,current:num(l.amount),value:prev?num(prev.actual):num(l.amount),floating:floatingOf(key),isEtf:false,isFallback:false});});
   });
   return rows;
 }
@@ -1053,30 +1020,34 @@ function openOpeningModal(){
   rows.forEach(r=>{if(!byGroup.has(r.parentId))byGroup.set(r.parentId,[]);byGroup.get(r.parentId).push(r);});
   const groupHtml=[...byGroup.entries()].map(([gid,list])=>{
     const g=groupById(gid)||{name:groupName(gid)};
-    return `<div class="card" style="margin-bottom:10px"><div class="card-head"><h2>${esc(g.name)}</h2><span class="grow"></span><span class="faint small num" data-group-total="${esc(gid)}">小计 ¥0.00</span></div><div class="table-wrap"><table><thead><tr><th>二级账户</th><th class="n">期初金额</th></tr></thead><tbody>${list.map(r=>`<tr><td>${esc(r.name)}${r.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(r.holdingCode||'')}</span>`:r.isFallback?'<span class="tag">兜底</span>':''}</td><td class="n"><input class="actual num" data-open-key="${esc(r.key)}" data-open-group="${esc(r.parentId)}" data-open-cur="${r.current}" type="number" step="0.01" inputmode="decimal" value="${r.value}"></td></tr>`).join('')}</tbody></table></div></div>`;
+    return `<div class="card" style="margin-bottom:10px"><div class="card-head"><h2>${esc(g.name)}</h2><span class="grow"></span><span class="faint small num" data-group-total="${esc(gid)}">小计 ¥0.00</span></div><div class="table-wrap"><table><thead><tr><th>二级账户</th><th class="n">期初金额</th><th class="n">浮动盈亏</th></tr></thead><tbody>${list.map(r=>`<tr><td>${esc(r.name)}${r.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(r.holdingCode||'')}</span>`:r.isFallback?'<span class="tag">兜底</span>':''}</td><td class="n"><input class="actual num" data-open-key="${esc(r.key)}" data-open-group="${esc(r.parentId)}" data-open-cur="${r.current}" type="number" step="0.01" inputmode="decimal" value="${r.value}"></td><td class="n"><input class="floating num" data-open-floating="${esc(r.key)}" data-open-group="${esc(r.parentId)}" type="number" step="0.01" inputmode="decimal" value="${r.floating}"></td></tr>`).join('')}</tbody></table></div></div>`;
   }).join('');
   const noManual=!rows.some(r=>!r.isEtf&&!r.isFallback);
-  const ov=openModal(`<div class="modal-head"><h3>${existing?'编辑期初':'录入期初'}</h3></div><div class="note">按该日期的实际余额填写。金额可正可负：资产填正数，负债填负数。期初不计算盈亏和消耗。</div>${noManual?'<div class="note">还没有手工账户，可先到账户配置创建，或直接填写证券账户总额/刷新 ETF。</div>':''}<div class="filters"><label>期初日期 <input type="date" id="openDate" value="${esc(openingDate)}"></label><span class="faint small">建议：上一个自然月最后一天</span></div>${groupHtml}<div class="summary-strip" id="openTotals"></div><div class="form-actions">${noManual?'<button class="btn" id="btnOpeningGoAccounts">去账户配置</button>':''}<button class="btn" id="btnOpenFill">填入当前余额</button><button class="btn" id="btnOpenZero">清空</button><span class="grow"></span><button class="btn" data-close>取消</button><button class="btn primary" id="btnSaveOpening">确定</button></div>`,{wide:true});
+  const ov=openModal(`<div class="modal-head"><h3>${existing?'编辑期初':'录入期初'}</h3></div><div class="note">按该日期的实际余额填写。金额可正可负：资产填正数，负债填负数。浮动盈亏：盈为正、亏为负，没有此概念的账户填 0，作为总账等式的起点。</div>${noManual?'<div class="note">还没有手工账户，可先到账户配置创建，或直接填写证券账户总额/刷新 ETF。</div>':''}<div class="filters"><label>期初日期 <input type="date" id="openDate" value="${esc(openingDate)}"></label><span class="faint small">建议：上一个自然月最后一天</span></div>${groupHtml}<div class="summary-strip" id="openTotals"></div><div class="form-actions">${noManual?'<button class="btn" id="btnOpeningGoAccounts">去账户配置</button>':''}<button class="btn" id="btnOpenFill">填入当前余额</button><button class="btn" id="btnOpenZero">清空</button><span class="grow"></span><button class="btn" data-close>取消</button><button class="btn primary" id="btnSaveOpening">确定</button></div>`,{wide:true});
   const go=ov.querySelector('#btnOpeningGoAccounts');if(go)go.onclick=()=>{closeModal();switchView('accounts');};
   const recalc=()=>{
-    let total=0;const groupTotals={};
+    let total=0,flTotal=0;const groupTotals={};
     document.querySelectorAll('[data-open-key]').forEach(el=>{const v=num(el.value);total+=v;const g=el.dataset.openGroup;groupTotals[g]=(groupTotals[g]||0)+v;});
+    document.querySelectorAll('[data-open-floating]').forEach(el=>{flTotal+=num(el.value);});
     const totals=$('#openTotals');
-    if(totals)totals.innerHTML=`<div class="box"><div class="lbl">期初总资产</div><div class="val num">¥${fmtMoney(total)}</div></div><div class="box"><div class="lbl">账户数</div><div class="val num">${rows.length}</div></div><div class="box"><div class="lbl">期初日期</div><div class="val num">${esc($('#openDate').value||openingDate)}</div></div><div class="box"><div class="lbl">说明</div><div class="val small" style="font-weight:400">负债请填负数</div></div>`;
+    if(totals)totals.innerHTML=`<div class="box"><div class="lbl">期初总资产</div><div class="val num">¥${fmtMoney(total)}</div></div><div class="box"><div class="lbl">期初浮动盈亏合计</div><div class="val num ${clsNum(flTotal)}">${fmtSigned(flTotal)}</div></div><div class="box"><div class="lbl">账户数</div><div class="val num">${rows.length}</div></div><div class="box"><div class="lbl">期初日期</div><div class="val num">${esc($('#openDate').value||openingDate)}</div></div>`;
     document.querySelectorAll('[data-group-total]').forEach(el=>{const g=el.dataset.groupTotal;el.textContent=`小计 ¥${fmtMoney(groupTotals[g]||0)}`;});
   };
-  document.querySelectorAll('[data-open-key]').forEach(el=>el.oninput=recalc);
+  document.querySelectorAll('[data-open-key],[data-open-floating]').forEach(el=>el.oninput=recalc);
   $('#openDate').onchange=recalc;
-  $('#btnOpenFill').onclick=()=>{document.querySelectorAll('[data-open-key]').forEach(el=>{el.value=el.dataset.openCur||'0';});recalc();};
-  $('#btnOpenZero').onclick=()=>{document.querySelectorAll('[data-open-key]').forEach(el=>{el.value='';});recalc();};
+  $('#btnOpenFill').onclick=()=>{document.querySelectorAll('[data-open-key]').forEach(el=>{el.value=el.dataset.openCur||'0';});document.querySelectorAll('[data-open-floating]').forEach(el=>{el.value='0';});recalc();};
+  $('#btnOpenZero').onclick=()=>{document.querySelectorAll('[data-open-key],[data-open-floating]').forEach(el=>{el.value='';});recalc();};
   $('#btnSaveOpening').onclick=()=>saveOpeningBaseline(rows);
   recalc();
 }
 function saveOpeningBaseline(rows){
   const date=$('#openDate').value||lastDayPrevMonth();
   if(!parseDate(date))return toast('请选择有效的期初日期','err');
-  const vals={};
-  rows.forEach(r=>{const inp=document.querySelector(`[data-open-key="${CSS.escape(r.key)}"]`);vals[r.key]=inp?num(inp.value):0;});
+  const vals={},fl={};
+  rows.forEach(r=>{
+    const inp=document.querySelector(`[data-open-key="${CSS.escape(r.key)}"]`);vals[r.key]=inp?num(inp.value):0;
+    const fi=document.querySelector(`[data-open-floating="${CSS.escape(r.key)}"]`);fl[r.key]=fi?num(fi.value):0;
+  });
   const hasManual=rows.some(r=>!r.isEtf&&!r.isFallback);
   const hasEtf=rows.some(r=>r.isEtf);
   const hasFallbackValue=rows.some(r=>r.isFallback&&Math.abs(vals[r.key])>0.005);
@@ -1084,13 +1055,14 @@ function saveOpeningBaseline(rows){
   if(state.snapshots.length&&!confirm(`保存后将删除现有期初及之后的所有盘点记录（共 ${state.snapshots.length} 条）。继续？`))return;
   backupState('before_opening');
   rows.forEach(r=>{if(r.isEtf)return;const leaf=allLeaves().find(l=>l.id===r.id);if(leaf)leaf.amount=vals[r.key];});
-  const items=rows.map(r=>({key:r.key,accountId:r.isEtf?null:r.id,holdingCode:r.holdingCode||null,parentId:r.parentId,groupName:r.groupName,name:r.name,categoryId:r.categoryId||null,before:vals[r.key],netFlow:0,expected:vals[r.key],actual:vals[r.key],diff:0,explanation:null,isEtf:!!r.isEtf,isFallback:!!r.isFallback}));
+  const items=rows.map(r=>({key:r.key,accountId:r.isEtf?null:r.id,holdingCode:r.holdingCode||null,parentId:r.parentId,groupName:r.groupName,name:r.name,categoryId:r.categoryId||null,before:vals[r.key],netFlow:0,expected:vals[r.key],actual:vals[r.key],floating:fl[r.key]||0,isEtf:!!r.isEtf,isFallback:!!r.isFallback}));
   const total=items.reduce((s,x)=>s+num(x.actual),0);
-  state.snapshots=[{id:uid(),date,type:'opening',createdAt:nowISO(),totalAssets:total,consumption:0,floatingPnl:0,other:0,unexplained:0,totalDiff:0,fromDate:null,notes:'期初',items}];
+  const flTotal=items.reduce((s,x)=>s+num(x.floating),0);
+  state.snapshots=[{id:uid(),date,type:'opening',createdAt:nowISO(),totalAssets:total,floatingTotal:flTotal,externalNet:0,floatingChange:0,consumption:0,ledgerV:1,fromDate:null,notes:'期初',items}];
   state.settings.lastReconcileDate=date;
   saveState({backup:true,label:'opening'});
   closeModal();draft=null;renderAll();switchView('dashboard');
-  toast(`期初已保存：${date} · 总资产 ¥${fmtMoney(total)}`,'ok');
+  toast(`期初已保存：${date} · 总资产 ¥${fmtMoney(total)} · 浮动盈亏 ${fmtSigned(flTotal)}`,'ok');
 }
 
 function nextCategoryColor(gs){
@@ -1268,8 +1240,15 @@ function saveAccountConfigEdit(){
 
 function openSnapshotDetail(id){
   const s=state.snapshots.find(x=>x.id===id);if(!s)return;
-  const rows=(s.items||[]).map(it=>`<tr><td>${esc(it.groupName||'')} / ${esc(it.name)}</td><td class="n">¥${fmtMoney(it.before)}</td><td class="n">${fmtSigned(it.netFlow)}</td><td class="n">¥${fmtMoney(it.expected)}</td><td class="n">¥${fmtMoney(it.actual)}</td><td class="n ${clsNum(it.diff)}">${fmtSigned(it.diff)}</td><td>${esc(it.explanation?explainLabel(it.explanation):'—')}</td></tr>`).join('');
-  openModal(`<div class="modal-head"><h3>${esc(s.date)} · ${s.type==='opening'?'期初':'盘点'}</h3></div><div class="summary-strip five"><div class="box"><div class="lbl">总资产</div><div class="val num">¥${fmtMoney(s.totalAssets)}</div></div><div class="box"><div class="lbl">消费</div><div class="val num">¥${fmtMoney(s.consumption)}</div></div><div class="box"><div class="lbl">浮盈浮亏</div><div class="val num ${clsNum(s.floatingPnl)}">${fmtSigned(s.floatingPnl)}</div></div><div class="box"><div class="lbl">其他</div><div class="val num ${clsNum(s.other)}">${fmtSigned(s.other)}</div></div><div class="box"><div class="lbl">未解释</div><div class="val num ${clsNum(s.unexplained)}">${fmtSigned(s.unexplained)}</div></div></div><div class="table-wrap"><table><thead><tr><th>账户</th><th class="n">上次余额</th><th class="n">期间净流入</th><th class="n">应有余额</th><th class="n">本次实际</th><th class="n">差额</th><th>解释</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="empty">暂无明细</td></tr>'}</tbody></table></div><div class="form-actions"><button class="btn primary" data-close>关闭</button></div>`,{wide:true});
+  const isLedger=num(s.ledgerV)===1;
+  const rows=isLedger
+    ?(s.items||[]).map(it=>`<tr><td>${esc(it.groupName||'')} / ${esc(it.name)}</td><td class="n">¥${fmtMoney(it.before)}</td><td class="n">¥${fmtMoney(it.actual)}</td><td class="n ${clsNum(it.floating)}">${fmtSigned(it.floating)}</td></tr>`).join('')
+    :(s.items||[]).map(it=>`<tr><td>${esc(it.groupName||'')} / ${esc(it.name)}</td><td class="n">¥${fmtMoney(it.before)}</td><td class="n">${fmtSigned(it.netFlow)}</td><td class="n">¥${fmtMoney(it.expected)}</td><td class="n">¥${fmtMoney(it.actual)}</td><td class="n ${clsNum(it.diff)}">${fmtSigned(it.diff)}</td><td>${esc(it.explanation?explainLabel(it.explanation):'—')}</td></tr>`).join('');
+  const strip=isLedger
+    ?`<div class="box"><div class="lbl">总资产</div><div class="val num">¥${fmtMoney(s.totalAssets)}</div></div><div class="box"><div class="lbl">期末浮动盈亏</div><div class="val num ${clsNum(s.floatingTotal)}">${fmtSigned(s.floatingTotal)}</div></div><div class="box"><div class="lbl">外部净流入</div><div class="val num ${clsNum(s.externalNet)}">${fmtSigned(s.externalNet)}</div></div><div class="box"><div class="lbl">本期浮动盈亏</div><div class="val num ${clsNum(s.floatingChange)}">${fmtSigned(s.floatingChange)}</div></div><div class="box"><div class="lbl">本期消费</div><div class="val num ${clsNum(s.consumption)}">${fmtSigned(s.consumption)}</div></div>`
+    :`<div class="box"><div class="lbl">总资产</div><div class="val num">¥${fmtMoney(s.totalAssets)}</div></div><div class="box"><div class="lbl">消费</div><div class="val num">¥${fmtMoney(s.consumption)}</div></div><div class="box"><div class="lbl">浮盈浮亏</div><div class="val num ${clsNum(s.floatingPnl)}">${fmtSigned(s.floatingPnl)}</div></div><div class="box"><div class="lbl">其他</div><div class="val num ${clsNum(s.other)}">${fmtSigned(s.other)}</div></div><div class="box"><div class="lbl">未解释</div><div class="val num ${clsNum(s.unexplained)}">${fmtSigned(s.unexplained)}</div></div>`;
+  const head=isLedger?'<tr><th>账户</th><th class="n">上次余额</th><th class="n">本次实际</th><th class="n">浮动盈亏</th></tr>':'<tr><th>账户</th><th class="n">上次余额</th><th class="n">期间净流入</th><th class="n">应有余额</th><th class="n">本次实际</th><th class="n">差额</th><th>解释</th></tr>';
+  openModal(`<div class="modal-head"><h3>${esc(s.date)} · ${s.type==='opening'?'期初':'盘点'}${isLedger?' · 总账口径':' · 旧口径'}</h3></div><div class="summary-strip five">${strip}</div><div class="table-wrap"><table><thead>${head}</thead><tbody>${rows||`<tr><td colspan="${isLedger?4:7}" class="empty">暂无明细</td></tr>`}</tbody></table></div><div class="form-actions"><button class="btn primary" data-close>关闭</button></div>`,{wide:true});
 }
 function renderSettings(){
   if(!state)return;
@@ -1282,7 +1261,7 @@ function renderSettings(){
   $('#view-settings').innerHTML=`
   <div class="card"><div class="card-head"><h2>数据安全</h2><span class="grow"></span>${hasLegacy?'<button class="btn small" id="btnExportLegacySettings">导出旧数据 JSON</button>':''}<button class="btn small" id="btnExport">导出 JSON</button><button class="btn small" id="btnImportFile">导入 JSON</button><button class="btn small danger" id="btnResetAll">清空数据</button></div><div class="filters"><button class="btn small" id="btnBackupNow">立即备份</button><span class="faint small">自动保留最近 8 份本机备份；退出登录会清除本机缓存与备份。</span></div><div class="table-wrap"><table><thead><tr><th>时间</th><th>标签</th><th>大小</th><th></th></tr></thead><tbody>${backups.length?backups.map(b=>`<tr><td>${esc(b.time)}</td><td>${esc(b.label)}</td><td>${fmtInt(b.size)} B</td><td><button class="icon-btn" data-restore="${esc(b.key)}">恢复</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">暂无备份</td></tr>'}</tbody></table></div><div class="note">云端同步：${esc(syncText)}${esc(lastSync)}。本机只保留当前会话缓存。</div></div>
   <div class="grid settings-grid">
-    <div class="card"><div class="card-head"><h2>盘点历史</h2><span class="grow"></span><button class="btn small" id="btnOpeningFromSettings">${openingSnapshot()?'编辑期初':'录入期初'}</button></div><div class="table-wrap"><table><thead><tr><th>日期</th><th>类型</th><th class="n">总资产</th><th class="n">消费</th><th class="n">未解释</th><th></th></tr></thead><tbody>${snaps.length?snaps.map(s=>`<tr><td>${esc(s.date)}</td><td>${s.type==='opening'?'期初':'盘点'}</td><td class="n">¥${fmtMoney(s.totalAssets)}</td><td class="n">¥${fmtMoney(s.consumption)}</td><td class="n ${clsNum(s.unexplained)}">${fmtSigned(s.unexplained)}</td><td><button class="icon-btn" data-snap="${esc(s.id)}">查看</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">暂无盘点</td></tr>'}</tbody></table></div></div>
+    <div class="card"><div class="card-head"><h2>盘点历史</h2><span class="grow"></span><button class="btn small" id="btnOpeningFromSettings">${openingSnapshot()?'编辑期初':'录入期初'}</button></div><div class="table-wrap"><table><thead><tr><th>日期</th><th>类型</th><th class="n">总资产</th><th class="n">本期消费</th><th class="n">本期浮动盈亏</th><th></th></tr></thead><tbody>${snaps.length?snaps.map(s=>`<tr><td>${esc(s.date)}</td><td>${s.type==='opening'?'期初':'盘点'}</td><td class="n">¥${fmtMoney(s.totalAssets)}</td><td class="n ${clsNum(s.consumption)}">${fmtSigned(s.consumption)}</td><td class="n ${clsNum(s.floatingChange)}">${fmtSigned(s.floatingChange)}</td><td><button class="icon-btn" data-snap="${esc(s.id)}">查看</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">暂无盘点</td></tr>'}</tbody></table></div></div>
     <div class="card"><div class="card-head"><h2>持仓刷新历史</h2><span class="grow"></span><button class="btn small" id="btnRefreshFromSettings">刷新投资数据</button></div><div class="table-wrap"><table><thead><tr><th>时间</th><th>方式</th><th>状态</th><th class="n">持仓数</th><th class="n">市值</th><th>数据日期</th></tr></thead><tbody>${imports.length?imports.slice(0,10).map(i=>`<tr><td>${esc((i.importedAt||'').slice(0,19).replace('T',' '))}</td><td>${i.mode==='auto'?'自动刷新':i.mode==='manual'?'手动刷新':'导入'}</td><td class="up">成功</td><td class="n">${i.holdings.length}</td><td class="n">¥${fmtMoney(i.holdings.reduce((s,h)=>s+holdingMV(h),0))}</td><td>${esc((i.holdings.map(h=>h.lastUpdate).filter(Boolean).sort().pop())||'—')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">暂无记录</td></tr>'}</tbody></table></div></div>
   </div>
   <div class="card" style="margin-top:14px"><div class="card-head"><h2>关于</h2><span class="grow"></span><button class="btn small" id="btnSelfTest">运行自检</button></div><div class="small muted">多多 ${BUILD} · 部署地址 https://alice8332-max.github.io/duoduo/ · 登录后数据保存在 Supabase 云端。导出 JSON 可完整备份。</div></div>`;
@@ -1438,7 +1417,8 @@ function runSelfTest(){
   ok('金额与百分比格式化',()=>fmtPct(12.345)==='12.35%'&&fmtMoney(-1234.5)==='-1,234.50');
   ok('正负金额直接相加',()=>withTempState({accounts:[{id:'g',kind:'group',order:1},{id:'a',parentId:'g',kind:'leaf',amount:100},{id:'b',parentId:'g',kind:'leaf',amount:-30}],imports:[],holdingSettings:{}},()=>Math.abs(totalAssets()-70)<1e-9));
   ok('配置类别金额之和等于总资产',()=>{const d=allocationData();const sum=d.rows.reduce((s,r)=>s+r.amount,0);return Math.abs(sum-d.total)<0.01;});
-  ok('差异关系：浮盈浮亏+其他+未解释-消费=差额',()=>{const items=[{actual:100,expected:120,explanation:'consumption'},{actual:50,expected:40,explanation:'floating'},{actual:10,expected:10,explanation:null},{actual:5,expected:0,explanation:'other'},{actual:0,expected:0,explanation:null}];let consumption=0,floating=0,other=0,unexplained=0,diff=0;items.forEach(it=>{const d=it.actual-it.expected;diff+=d;if(!d)return;if(it.explanation==='consumption')consumption+=-d;else if(it.explanation==='floating')floating+=d;else if(it.explanation==='other')other+=d;else unexplained+=d;});return Math.abs(floating+other+unexplained-consumption-diff)<1e-9;});
+  ok('总账等式：消费=期初总资产+外部净流入+浮动盈亏变化-期末总资产',()=>{const prevTotal=40000,prevFloating=0,totalAssets=60000,floatingTotal=-10000,externalNet=30000;const floatingChange=floatingTotal-prevFloating;const consumption=prevTotal+externalNet+floatingChange-totalAssets;return Math.abs(floatingChange+10000)<1e-9&&Math.abs(consumption)<1e-9;});
+  ok('账户间转账不计入期间净流入',()=>{const saved=state.flows;state.flows=[{id:'1',date:'2026-01-01',type:'transfer',fromKey:'a:x',toKey:'a:y',amount:500}];const d={fromDate:'2025-12-31',date:'2026-12-31',flows:[]};const outside=externalNetForDraft(d),inside=netFlowForKey(d,'a:x'),insideTo=netFlowForKey(d,'a:y');state.flows=saved;return Math.abs(outside)<1e-9&&Math.abs(inside)<1e-9&&Math.abs(insideTo)<1e-9;});
   ok('快照按日期取最近基线',()=>{const saved=state.snapshots;state.snapshots=[{date:'2026-01-01',type:'opening'},{date:'2026-03-01',type:'reconcile'},{date:'2026-02-01',type:'reconcile'}];const b=snapshotBefore('2026-02-15');state.snapshots=saved;return b&&b.date==='2026-02-01';});
   ok('外部资金净额按账户计算',()=>{const saved=state.flows;state.flows=[{id:'1',date:'2026-01-01',type:'external_in',toKey:'a:x',amount:100},{id:'2',date:'2026-01-02',type:'external_out',fromKey:'a:x',amount:30}];const d={fromDate:'2025-12-31',date:'2026-12-31',flows:[]};const v=netFlowForKey(d,'a:x');state.flows=saved;return Math.abs(v-70)<1e-9;});
   ok('ETF 市值按份额×现价',()=>Math.abs(holdingMV({shares:100,currentPrice:1.5})-150)<1e-9);
