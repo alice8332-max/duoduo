@@ -131,7 +131,28 @@ tr:hover td{background:#f8fafc}
 .cfg-add-group{margin-top:12px}
 .cfg-empty{padding:18px;color:var(--muted);font-size:13px;text-align:center}
 .cfg-lock{font-size:10px;color:var(--muted)}
-@media(max-width:900px){.cfg-row,.cfg-group-row{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}.cfg-row .cfg-type,.cfg-row .cfg-cat{grid-column:1/-1}.cfg-actions{opacity:1}.cfg-extra{grid-template-columns:1fr;padding-left:14px}.cfg-cats{padding:9px}.cat-chip input{width:74px}}
+.metric-single{grid-template-columns:1fr;margin-bottom:14px}
+.settings-grid{grid-template-columns:1fr 1fr;margin-top:14px}
+.step-card{margin-top:14px}
+.step-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.step-head h2{font-size:15px;font-weight:650}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.inline-form{display:grid;grid-template-columns:110px 120px minmax(140px,1fr) 120px minmax(120px,1fr) auto;gap:8px;align-items:end;margin-top:10px}
+.inline-form.transfer{grid-template-columns:110px minmax(140px,1fr) minmax(140px,1fr) 120px minmax(120px,1fr) auto}
+.inline-form .field{min-width:0}
+.flow-list{display:grid;gap:6px;margin-top:10px}
+.flow-item{display:flex;gap:10px;align-items:center;padding:8px 10px;background:var(--card2);border-radius:8px;font-size:12px;flex-wrap:wrap}
+.flow-item .grow{flex:1}
+.explain-list{display:grid;gap:7px;margin-top:10px}
+.explain-row{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1fr) 110px 130px;gap:8px;align-items:center;font-size:12px}
+.explain-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.explain-row select{width:100%}
+.summary-strip.five{grid-template-columns:repeat(5,1fr)}
+.cfg-amount{text-align:right;font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cfg-hint{padding:10px 12px;color:var(--muted);font-size:12px}
+.consumption2{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;align-items:center}
+.modal.wide{width:min(980px,100%)}
+@media(max-width:900px){.cfg-row,.cfg-group-row{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}.cfg-row .cfg-type,.cfg-row .cfg-cat{grid-column:1/-1}.cfg-amount{grid-column:1/-1;text-align:left}.cfg-actions{opacity:1}.cfg-extra{grid-template-columns:1fr;padding-left:14px}.cfg-cats{padding:9px}.cat-chip input{width:74px}.summary-strip.five{grid-template-columns:repeat(2,1fr)}.inline-form,.inline-form.transfer{grid-template-columns:1fr 1fr}.inline-form .wide{grid-column:1/-1}.explain-row{grid-template-columns:1fr 1fr}.explain-row select{grid-column:1/-1}.consumption2{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}}
 .filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 input,select,textarea{font:inherit;color:var(--text);background:#fff;border:1px solid #d5d9e0;border-radius:7px;padding:7px 9px;font-size:13px;outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
@@ -177,7 +198,7 @@ body.locked .app{display:none}
 .login-card h2{font-size:18px;margin-bottom:6px}
 .login-card .err{color:var(--bad);font-size:12px;min-height:18px;margin:4px 0 8px}
 @media(max-width:900px){body{padding:14px 12px 56px}.metrics{grid-template-columns:repeat(2,1fr)}.dash-top{grid-template-columns:1fr}.consumption{grid-template-columns:1fr}.summary-strip{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.opening-grid{grid-template-columns:1fr}.topbar-actions{margin-left:0;width:100%}.topbar-actions .btn{flex:1}.alloc-row{grid-template-columns:12px 1fr auto 54px}.acc-leaf{grid-template-columns:1fr auto;row-gap:2px}.acc-leaf .grp{display:none}}
-@media(max-width:600px){.modal-back{padding:12px}.modal{padding:14px}.modal .form-actions{flex-wrap:wrap}.modal .form-actions .btn.primary{margin-left:0}.build-tag{display:none}.topbar-actions .btn{padding:6px 8px;font-size:12px}}
+@media(max-width:600px){.modal-back{padding:12px}.modal{padding:14px}.modal .form-actions{flex-wrap:wrap}.modal .form-actions .btn.primary{margin-left:0}.build-tag{display:none}.topbar-actions .btn{padding:6px 8px;font-size:12px}.inline-form,.inline-form.transfer{grid-template-columns:1fr}.explain-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body class="locked">
@@ -189,10 +210,10 @@ body.locked .app{display:none}
       <span id="buildTag" class="build-tag"></span>
       <button class="btn ghost" id="btnLogout" style="display:none">退出</button>
       <button class="btn" id="btnRefreshPlatform">刷新投资数据</button>
-      <button class="btn" id="btnQuickFlow">快速记一笔</button>
       <button class="btn primary" id="btnStartReconcile">开始盘点</button>
     </div>
   </header>
+  <div id="legacyBanner"></div>
   <div id="platformNotice" class="platform-notice hidden">
     <span id="platformNoticeText"></span>
     <span class="grow"></span>
@@ -249,94 +270,142 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 
 <script>
 'use strict';
-const STORE_KEY='ddData_v1';const BACKUP_PREFIX='ddData_v1_backup_';const CORRUPT_KEY='ddData_v1_corrupted_backup';const SYNC_KEY='ddSyncMeta_v1';const BUILD='v0.3.0-20261119';
-const PLATFORM_KEY='invPlatformData_v1';const PLATFORM_URL='https://alice8332-max.github.io/ftest/';
+const STORE_KEY='ddData_v1';
+const BACKUP_PREFIX='ddData_v2_backup_';
+const LEGACY_KEY='ddData_v1_legacy_20261120';
+const LEGACY_BANNER_KEY='ddLegacyBannerDismissed_v1';
+const CORRUPT_KEY='ddData_v1_corrupted_backup';
+const SYNC_KEY='ddSyncMeta_v1';
+const BUILD='v0.4.0-20261120';
+const PLATFORM_KEY='invPlatformData_v1';
+const PLATFORM_URL='https://alice8332-max.github.io/ftest/';
 const SUPABASE_URL='https://gqjbtbxtkiptjeryqawd.supabase.co';
 const SUPABASE_KEY='sb_publishable_xAbx5HkUJCMssWBtPWzgCw_9UDQNrc2';
 const SUPABASE_TABLE='dd_data';
-const DEFAULT_GROUPS=[{id:'cash',name:'现金',color:'#4e79a7',order:1},{id:'fixed',name:'固收',color:'#59a14f',order:2},{id:'gold',name:'黄金',color:'#d4a017',order:3},{id:'overseas',name:'海外资产',color:'#af7aa1',order:4},{id:'equity',name:'权益',color:'#e15759',order:5}];
+const SYSTEM_GROUP_ID='g_securities';
+const SYSTEM_GROUP_NAME='证券账户';
+const FALLBACK_LEAF_ID='a_securities_total';
+const FALLBACK_LEAF_NAME='证券账户总额';
 const CFG_COLORS=['#4e79a7','#59a14f','#d4a017','#af7aa1','#e15759','#76b7b2','#edc948','#ff9da7','#9c755f','#bab0ab'];
-const ACCOUNT_TYPES=[{id:'cash',label:'现金'},{id:'invest',label:'投资'},{id:'gold',label:'积存金'},{id:'fixed',label:'定存'},{id:'fund',label:'基金'},{id:'short_liability',label:'短期负债'},{id:'other_asset',label:'其他资产'},{id:'long_liability',label:'长期负债'}];
-const $=s=>document.querySelector(s);const $$=s=>Array.from(document.querySelectorAll(s));
+const EXPLANATIONS=[{id:'consumption',label:'消费'},{id:'floating',label:'浮盈浮亏'},{id:'other',label:'其他'},{id:'unexplained',label:'未解释'}];
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>'id_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
-const today=()=>new Date().toISOString().slice(0,10);
-function lastDayPrevMonth(){const d=new Date();const x=new Date(d.getFullYear(),d.getMonth(),0);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;}
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+const nowISO=()=>new Date().toISOString();
 const monthKey=d=>(d||today()).slice(0,7);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
-const fmtMoney=n=>{const v=num(n);return (v<0?'-':'')+Math.abs(v).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})};
+const fmtMoney=n=>{const v=num(n);return (v<0?'-':'')+Math.abs(v).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});};
 const fmtInt=n=>Math.round(num(n)).toLocaleString('zh-CN');
 const fmtPct=n=>Number.isFinite(Number(n))?Number(n).toFixed(2)+'%':'--';
-const fmtGrams=n=>Number(num(n)).toFixed(2).replace(/\.00$/,'')+' g';
+const fmtSigned=n=>{const v=num(n);return (v>=0?'+':'')+fmtMoney(v);};
 const clsNum=n=>num(n)>0?'up':num(n)<0?'down':'';
-const daysInMonth=(y,m)=>new Date(y,m+1,0).getDate();
-const parseDate=s=>{const d=new Date(s+'T00:00:00');return isNaN(d)?null:d};
-const nowISO=()=>new Date().toISOString();
-
+const parseDate=s=>{const d=new Date(s+'T00:00:00');return isNaN(d)?null:d;};
+function lastDayPrevMonth(){const d=new Date();const x=new Date(d.getFullYear(),d.getMonth(),0);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;}
 
 let sb=null;try{if(window.supabase&&typeof window.supabase.createClient==='function')sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}catch(e){console.error('[supabase] init failed',e);sb=null;}
 let state=null;let activeView='dashboard';let draft=null;let modalCleanup=null;
 let cfgEditing=false;let cfgDraft=null;
 let currentUser=null;let sessionReady=false;let syncBusy=false;let pushTimer=null;let booting=false;
-let syncMeta={baseRevision:0,dirty:false};
-function defaultAccounts(){
-  const G=(id,name,order,extra={})=>({id,parentId:null,name,kind:'group',pool:'invest',order,archived:false,tags:[],meta:{},...extra});
-  const L=(id,parentId,name,pool,groupId,extra={})=>({id,parentId,name,kind:'leaf',pool,allocationGroupId:groupId,measure:'amount',tags:[],source:'manual',isConsumptionAccount:pool==='liquid',isLiquid:pool==='liquid',balance:0,marketValue:0,cost:0,quantity:null,unit:null,avgCost:null,asOf:today(),archived:false,meta:{},...extra});
-  return [
-    G('g_bank','银行',1,{pool:'liquid'}),L('a_bank_current','g_bank','活期','liquid','cash',{isConsumptionAccount:true,isLiquid:true}),
-    L('a_bank_gold','g_bank','积存金','invest','gold',{measure:'gold_accumulation',quantity:0,unit:'g',avgCost:0,marketValue:0,cost:0,isConsumptionAccount:false,isLiquid:false}),
-    G('g_wechat','微信',2,{pool:'liquid'}),L('a_wechat_change','g_wechat','零钱','liquid','cash',{isConsumptionAccount:true,isLiquid:true}),L('a_wechat_licai','g_wechat','零钱通','liquid','cash',{isConsumptionAccount:true,isLiquid:true}),
-    G('g_alipay','支付宝',3,{pool:'liquid'}),L('a_alipay_balance','g_alipay','余额','liquid','cash',{isConsumptionAccount:true,isLiquid:true}),
-    G('g_jd','京东',4,{pool:'liquid'}),L('a_jd_xiaojinku','g_jd','小金库','liquid','cash',{isConsumptionAccount:true,isLiquid:true}),L('a_jd_gold','g_jd','黄金积存','invest','gold',{measure:'gold_accumulation',quantity:0,unit:'g',avgCost:0,marketValue:0,cost:0,isConsumptionAccount:false,isLiquid:false}),
-    G('g_securities','证券账户',5,{pool:'invest',holdingsSource:'investment_platform'}),
-    G('g_fund','基金',6,{pool:'invest'}),L('a_fund_1','g_fund','场外基金','invest','equity',{source:'fund',cost:0,isConsumptionAccount:false,isLiquid:false}),
-    G('g_fixed','定存',7,{pool:'invest'}),L('a_fixed_1','g_fixed','定存-2026A','invest','fixed',{source:'fixed',cost:0,isConsumptionAccount:false,isLiquid:false,meta:{principal:0,rate:0,endDate:''}}),
-    G('g_liability','负债',8,{pool:'other'}),L('a_credit','g_liability','信用卡','liquid','cash',{isLiability:true,isConsumptionAccount:false,isLiquid:true,balance:0,marketValue:0,allocationGroupId:null,meta:{dueDay:25}})
-  ];
+let stateVersion=0;
+let syncMeta={baseRevision:0,dirty:false,lastSyncAt:null};
+
+function defaultState(){
+  return {
+    version:2,
+    createdAt:nowISO(),
+    settings:{lastReconcileDate:null},
+    allocationGroups:[],
+    accounts:[
+      {id:SYSTEM_GROUP_ID,name:SYSTEM_GROUP_NAME,kind:'group',order:9999,system:true},
+      {id:FALLBACK_LEAF_ID,parentId:SYSTEM_GROUP_ID,name:FALLBACK_LEAF_NAME,kind:'leaf',categoryId:null,amount:0,order:0,system:true,fallback:true}
+    ],
+    holdingSettings:{},
+    imports:[],
+    snapshots:[],
+    flows:[]
+  };
 }
-function defaultState(){return {version:1,createdAt:nowISO(),settings:{startDate:today(),currency:'CNY',budget:10000,includeExternalOutflowInBudget:true,allocationShareBase:'total_assets',averageWindowMonths:6,lastReconcileDate:null},allocationGroups:DEFAULT_GROUPS.map(g=>({...g})),accounts:defaultAccounts(),holdingSettings:{},imports:[],snapshots:[],flows:[]};}
-function normalize(s){
-  if(!s||typeof s!=='object')s=defaultState();
-  if(!s.settings||typeof s.settings!=='object')s.settings={};
-  s.settings=Object.assign({startDate:today(),currency:'CNY',budget:10000,includeExternalOutflowInBudget:true,allocationShareBase:'total_assets',averageWindowMonths:6,lastReconcileDate:null},s.settings);
-  if(!Array.isArray(s.allocationGroups))s.allocationGroups=DEFAULT_GROUPS.map(g=>({...g}));
-  if(!Array.isArray(s.accounts))s.accounts=defaultAccounts();
-  if(!s.holdingSettings||typeof s.holdingSettings!=='object')s.holdingSettings={};
-  if(!Array.isArray(s.imports))s.imports=[];if(!Array.isArray(s.snapshots))s.snapshots=[];if(!Array.isArray(s.flows))s.flows=[];
-  s.version=1;
-  s.accounts.forEach(a=>{
-    a.tags=Array.isArray(a.tags)?a.tags:[];a.meta=a.meta&&typeof a.meta==='object'?a.meta:{};a.archived=!!a.archived;
-    if(a.kind==='leaf'){
-      a.measure=a.measure||'amount';a.source=a.source||'manual';a.isLiability=!!a.isLiability;a.isConsumptionAccount=!!a.isConsumptionAccount;a.isLiquid=!!a.isLiquid;
-      if(a.source==='fixed')a.meta=Object.assign({principal:0,startDate:'',endDate:'',rate:0,interestMethod:'simple',maturityAction:'cash',linkedAccountId:''},a.meta);
-      a.quantity=a.quantity==null?null:num(a.quantity);a.avgCost=a.avgCost==null?null:num(a.avgCost);a.cost=num(a.cost);
-      if(a.isLiability){const v=num(a.balance)||num(a.marketValue);a.balance=-Math.abs(v);a.marketValue=-Math.abs(v);}
-      else{a.balance=num(a.balance);a.marketValue=a.marketValue==null?a.balance:num(a.marketValue);if(a.pool==='liquid'&&a.measure!=='gold_accumulation')a.marketValue=a.balance;}
-      a.asOf=a.asOf||today();
-    }
+function isLegacyState(s){
+  if(!s||typeof s!=='object')return false;
+  if(s.version===2)return false;
+  if(s.version===1)return true;
+  if(Array.isArray(s.accounts)&&s.accounts.some(a=>a&&(a.pool!==undefined||a.measure!==undefined||a.source!==undefined||a.holdingsSource)))return true;
+  if(Array.isArray(s.snapshots)&&s.snapshots.some(x=>x&&x.reconcile&&x.reconcile.investmentPnl!==undefined))return true;
+  return false;
+}
+function normalizeV2(raw){
+  const s=(raw&&typeof raw==='object')?JSON.parse(JSON.stringify(raw)):defaultState();
+  s.version=2;
+  s.createdAt=s.createdAt||nowISO();
+  s.settings=s.settings&&typeof s.settings==='object'?s.settings:{};
+  s.settings={lastReconcileDate:s.settings.lastReconcileDate||null};
+  s.allocationGroups=Array.isArray(s.allocationGroups)?s.allocationGroups.filter(g=>g&&g.id).map((g,i)=>({id:String(g.id),name:String(g.name||'未命名'),color:String(g.color||CFG_COLORS[i%CFG_COLORS.length]),order:num(g.order)||i+1})):[];
+  const groups=[];const leaves=[];
+  (Array.isArray(s.accounts)?s.accounts:[]).forEach((a,i)=>{
+    if(!a||!a.id)return;
+    if(a.kind==='group')groups.push({id:String(a.id),name:String(a.name||'未命名'),kind:'group',order:num(a.order)||i+1,system:!!a.system});
+    else if(a.kind==='leaf')leaves.push({id:String(a.id),parentId:a.parentId?String(a.parentId):null,name:String(a.name||'未命名'),kind:'leaf',categoryId:a.categoryId?String(a.categoryId):null,amount:num(a.amount),order:num(a.order)||i+1,system:!!a.system,fallback:!!a.fallback});
   });
+  let sys=groups.find(g=>g.id===SYSTEM_GROUP_ID);
+  if(!sys){sys={id:SYSTEM_GROUP_ID,name:SYSTEM_GROUP_NAME,kind:'group',order:9999,system:true};groups.push(sys);}
+  sys.name=SYSTEM_GROUP_NAME;sys.system=true;sys.order=9999;
+  let fb=leaves.find(l=>l.id===FALLBACK_LEAF_ID);
+  if(!fb){fb={id:FALLBACK_LEAF_ID,parentId:SYSTEM_GROUP_ID,name:FALLBACK_LEAF_NAME,kind:'leaf',categoryId:null,amount:0,order:0,system:true,fallback:true};leaves.push(fb);}
+  fb.parentId=SYSTEM_GROUP_ID;fb.name=FALLBACK_LEAF_NAME;fb.system=true;fb.fallback=true;
+  s.accounts=[...groups,...leaves];
+  const catIds=new Set(s.allocationGroups.map(g=>g.id));
+  leaves.forEach(l=>{if(l.categoryId&&!catIds.has(l.categoryId))l.categoryId=null;});
+  const hs={};
+  Object.keys(s.holdingSettings||{}).forEach(code=>{const v=s.holdingSettings[code]||{};hs[String(code)]={categoryId:v.categoryId&&catIds.has(String(v.categoryId))?String(v.categoryId):null,order:num(v.order)||0};});
+  s.holdingSettings=hs;
+  s.imports=Array.isArray(s.imports)?s.imports.filter(i=>i&&Array.isArray(i.holdings)).map(i=>({id:String(i.id||uid()),importedAt:String(i.importedAt||nowISO()),source:String(i.source||'invPlatformData_v1'),mode:String(i.mode||'manual'),holdings:i.holdings.map(h=>({code:String(h.code||''),name:String(h.name||h.code||''),shares:num(h.shares),avgCost:num(h.avgCost),currentPrice:num(h.currentPrice),lastUpdate:String(h.lastUpdate||'').slice(0,10),order:num(h.order)||0})).filter(h=>h.code)})).sort((a,b)=>String(a.importedAt).localeCompare(String(b.importedAt))):[];
+  s.snapshots=Array.isArray(s.snapshots)?s.snapshots.filter(x=>x&&x.date).map(x=>({...x,id:String(x.id||uid()),date:String(x.date),type:(x.type==='opening'||x.opening)?'opening':'reconcile',items:Array.isArray(x.items)?x.items:[]})).sort((a,b)=>String(a.date).localeCompare(String(b.date))):[];
+  s.flows=Array.isArray(s.flows)?s.flows.filter(f=>f&&f.date).map(f=>({id:String(f.id||uid()),date:String(f.date),type:['external_in','external_out','transfer'].includes(f.type)?f.type:'external_in',amount:num(f.amount),fromKey:f.fromKey||f.fromAccountId||null,toKey:f.toKey||f.toAccountId||null,note:String(f.note||''),createdAt:String(f.createdAt||nowISO()),snapshotId:f.snapshotId||null})):[];
   return s;
 }
-function loadState(){
-  const raw=localStorage.getItem(STORE_KEY);
-  if(!raw){const s=defaultState();localStorage.setItem(STORE_KEY,JSON.stringify(s));return s;}
-  try{return normalize(JSON.parse(raw));}catch(e){localStorage.setItem(CORRUPT_KEY,raw);const s=defaultState();localStorage.setItem(STORE_KEY,JSON.stringify(s));setTimeout(()=>toast('本地数据损坏，已备份并载入默认数据','err'),500);return s;}
+function saveLegacyBackup(data,source){
+  try{
+    const raw=localStorage.getItem(LEGACY_KEY);
+    if(raw&&source!=='cloud')return;
+    localStorage.setItem(LEGACY_KEY,JSON.stringify({source:source||'local',savedAt:nowISO(),data}));
+  }catch(e){console.warn('legacy backup failed',e);}
+}
+function legacyBackup(){
+  try{const raw=localStorage.getItem(LEGACY_KEY);return raw?JSON.parse(raw):null;}catch(e){return null;}
+}
+function readLocalState(){
+  let raw=null;try{raw=localStorage.getItem(STORE_KEY);}catch(e){}
+  if(!raw)return {state:null,has:false,legacy:null};
+  let parsed=null;
+  try{parsed=JSON.parse(raw);}catch(e){try{localStorage.setItem(CORRUPT_KEY,raw);}catch(_){}return {state:null,has:false,legacy:null};}
+  if(isLegacyState(parsed)){saveLegacyBackup(parsed,'local');return {state:null,has:false,legacy:parsed};}
+  try{return {state:normalizeV2(parsed),has:true,legacy:null};}catch(e){return {state:null,has:false,legacy:null};}
 }
 function saveState(opts={}){
   if(!state)return;
+  state.version=2;
   stateVersion++;
-  localStorage.setItem(STORE_KEY,JSON.stringify(state));
+  try{
+    localStorage.setItem(STORE_KEY,JSON.stringify(state));
+    if(localStorage.getItem(LEGACY_KEY))localStorage.setItem(LEGACY_BANNER_KEY,'1');
+  }catch(e){console.warn('local save failed',e);toast('本机存储写入失败，请检查浏览器存储空间','err');}
   if(opts.backup)backupState(opts.label||'save');
+  renderLegacyBanner();
   scheduleCloudPush();
 }
-let stateVersion=0;
-function loadSyncMeta(){try{const raw=localStorage.getItem(SYNC_KEY);if(!raw)return;const m=JSON.parse(raw);syncMeta={baseRevision:Number(m&&m.baseRevision)||0,dirty:!!(m&&m.dirty)};}catch(e){}}
+function loadSyncMeta(){try{const raw=localStorage.getItem(SYNC_KEY);if(!raw)return;const m=JSON.parse(raw);syncMeta={baseRevision:Number(m&&m.baseRevision)||0,dirty:!!(m&&m.dirty),lastSyncAt:m&&m.lastSyncAt?String(m.lastSyncAt):null};}catch(e){}}
 function saveSyncMeta(){try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncMeta));}catch(e){}}
-function setSyncDot(state,title){const d=$('#syncDot');if(!d)return;d.className='sync-dot '+(state||'');d.title=title||'';}
+function setSyncDot(st,title){const d=$('#syncDot');if(!d)return;d.className='sync-dot '+(st||'');d.title=title||'';}
 function clearLocalData(){
-  try{[STORE_KEY,SYNC_KEY,CORRUPT_KEY].forEach(k=>localStorage.removeItem(k));listBackupKeys().forEach(k=>localStorage.removeItem(k));}catch(e){}
-  state=null;stateVersion=0;syncMeta={baseRevision:0,dirty:false};cfgEditing=false;cfgDraft=null;
+  try{
+    [STORE_KEY,SYNC_KEY,CORRUPT_KEY,LEGACY_KEY,LEGACY_BANNER_KEY].forEach(k=>localStorage.removeItem(k));
+    const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith(BACKUP_PREFIX)||k.startsWith('ddData_v1_backup_')))keys.push(k);}
+    keys.forEach(k=>localStorage.removeItem(k));
+  }catch(e){}
+  state=null;stateVersion=0;syncMeta={baseRevision:0,dirty:false,lastSyncAt:null};cfgEditing=false;cfgDraft=null;draft=null;
 }
 function friendlyError(e){
   const msg=e&&(e.message||e.error_description||e.hint)?String(e.message||e.error_description||e.hint):String(e||'未知错误');
@@ -352,6 +421,7 @@ function showLogin(){updateAuthUI(false);const o=$('#loginOverlay');if(o)o.style
 function hideLogin(){const o=$('#loginOverlay');if(o)o.style.display='none';}
 function showBoot(msg){const o=$('#bootOverlay');if(o){o.style.display='flex';const c=o.firstElementChild;if(c)c.textContent=msg||'正在连接云端…';}}
 function hideBoot(){const o=$('#bootOverlay');if(o)o.style.display='none';}
+
 function scheduleCloudPush(){
   if(!sb||!sessionReady||!currentUser)return;
   syncMeta.dirty=true;saveSyncMeta();setSyncDot('pending','有改动待同步');
@@ -365,9 +435,23 @@ async function flushCloudPush(){
   try{
     const {data,error}=await sb.from(SUPABASE_TABLE).update({data:state,revision:syncMeta.baseRevision+1,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id).eq('revision',syncMeta.baseRevision).select('revision');
     if(error)throw error;
-    if(!data||!data.length){await handlePushConflict();return;}
+    if(!data||!data.length){
+      const {data:rows,error:readErr}=await sb.from(SUPABASE_TABLE).select('data,revision').eq('user_id',currentUser.id).limit(1);
+      if(readErr)throw readErr;
+      const r=rows&&rows[0];
+      if(r&&isLegacyState(r.data)){
+        saveLegacyBackup(r.data,'cloud');
+        syncMeta.baseRevision=Number(r.revision)||0;
+        syncMeta.dirty=true;saveSyncMeta();setSyncDot('pending','正在覆盖旧版云端数据');
+        pushTimer=setTimeout(flushCloudPush,300);
+        return;
+      }
+      if(r&&!$('#modalRoot').children.length)showSyncConflict(r);
+      else{setSyncDot('err','云端有更新，稍后重试');clearTimeout(pushTimer);pushTimer=setTimeout(flushCloudPush,15000);}
+      return;
+    }
     syncMeta.baseRevision=Number(data[0].revision)||syncMeta.baseRevision+1;
-    syncMeta.dirty=stateVersion!==ver;saveSyncMeta();
+    syncMeta.dirty=stateVersion!==ver;syncMeta.lastSyncAt=nowISO();saveSyncMeta();
     setSyncDot(syncMeta.dirty?'pending':'ok',syncMeta.dirty?'有新改动待同步':'已同步到云端');
     if(syncMeta.dirty){clearTimeout(pushTimer);pushTimer=setTimeout(flushCloudPush,1200);}
   }catch(e){
@@ -376,16 +460,9 @@ async function flushCloudPush(){
     clearTimeout(pushTimer);pushTimer=setTimeout(flushCloudPush,15000);
   }finally{syncBusy=false;}
 }
-async function handlePushConflict(){
-  try{
-    const {data:rows,error}=await sb.from(SUPABASE_TABLE).select('data,revision').eq('user_id',currentUser.id).limit(1);
-    if(error)throw error;
-    if(rows&&rows[0])showSyncConflict(rows[0]);
-    else{setSyncDot('err','云端数据不存在，请刷新后重试');}
-  }catch(e){setSyncDot('err','检测到冲突，但读取云端失败');console.error('[cloud] conflict read failed',e);}
-}
 function showSyncConflict(remoteRow){
-  let remote=null;try{remote=normalize(remoteRow.data);}catch(e){}
+  let remote=null;try{if(!isLegacyState(remoteRow.data))remote=normalizeV2(remoteRow.data);}catch(e){}
+  if(!remote){syncMeta.baseRevision=Number(remoteRow.revision)||0;syncMeta.dirty=true;saveSyncMeta();clearTimeout(pushTimer);pushTimer=setTimeout(flushCloudPush,50);return;}
   const ov=openModal(`<div class="modal-head"><h3>检测到云端有更新</h3></div><div class="small muted" style="line-height:1.7">云端版本 v${esc(remoteRow.revision)} 比本机记录的新，可能是另一台设备改过。请选择处理方式。</div><div class="sync-choice"><label><input type="radio" name="syncChoice" value="load"><span><b>加载云端</b><span class="desc">丢弃本机未同步的改动，使用云端数据。</span></span></label><label><input type="radio" name="syncChoice" value="force"><span><b>用本机覆盖云端</b><span class="desc">保留本机数据，并写入云端。</span></span></label></div><div class="form-actions"><button class="btn" data-close>取消</button><button class="btn primary" id="btnSyncChoice" disabled>确定</button></div>`);
   const btn=ov.querySelector('#btnSyncChoice');
   const sync=()=>{btn.disabled=!ov.querySelector('input[name="syncChoice"]:checked');};
@@ -395,24 +472,28 @@ function showSyncConflict(remoteRow){
     const choice=ov.querySelector('input[name="syncChoice"]:checked')?.value;
     if(!choice)return;
     if(choice==='load'){if(!remote)return toast('云端数据解析失败','err');closeModal();applyRemoteState(remote,remoteRow.revision);return;}
-    closeModal();syncMeta.baseRevision=Number(remoteRow.revision)||0;syncMeta.dirty=true;saveSyncMeta();await flushCloudPush();
+    closeModal();syncMeta.baseRevision=Number(remoteRow.revision)||0;syncMeta.dirty=true;saveSyncMeta();clearTimeout(pushTimer);pushTimer=setTimeout(flushCloudPush,50);
   };
 }
 function applyRemoteState(norm,rev){
-  state=normalize(norm);stateVersion=0;cfgEditing=false;cfgDraft=null;
-  syncMeta.baseRevision=Number(rev)||0;syncMeta.dirty=false;saveSyncMeta();
+  if(isLegacyState(norm))return toast('云端仍是旧版数据，请刷新后重试','err');
+  state=normalizeV2(norm);stateVersion=0;cfgEditing=false;cfgDraft=null;draft=null;
+  clearTimeout(pushTimer);pushTimer=null;
+  syncMeta.baseRevision=Number(rev)||0;syncMeta.dirty=false;syncMeta.lastSyncAt=nowISO();saveSyncMeta();
   localStorage.setItem(STORE_KEY,JSON.stringify(state));
   renderAll();setSyncDot('ok','已同步到云端');
 }
 async function pullIfNewer(){
   if(cfgEditing)return;
+  if(draft)return;
+  if($('#modalRoot').children.length)return;
   if(!sb||!sessionReady||!currentUser||syncBusy)return;
   if(syncMeta.dirty){flushCloudPush();return;}
   try{
     const {data:rows,error}=await sb.from(SUPABASE_TABLE).select('data,revision').eq('user_id',currentUser.id).limit(1);
     if(error)throw error;
     const r=rows&&rows[0];
-    if(r&&Number(r.revision)>syncMeta.baseRevision)applyRemoteState(r.data,r.revision);
+    if(r&&!isLegacyState(r.data)&&Number(r.revision)>syncMeta.baseRevision)applyRemoteState(r.data,r.revision);
   }catch(e){console.error('[cloud] pull failed',e);}
 }
 async function startCloudSession(){
@@ -424,30 +505,49 @@ async function startCloudSession(){
     if(!session||!session.user)throw new Error('登录状态已失效，请重新登录');
     currentUser=session.user;sessionReady=false;loadSyncMeta();
     const wasDirty=!!syncMeta.dirty;
-    const localRaw=localStorage.getItem(STORE_KEY);
-    let localState=null;if(localRaw){try{localState=normalize(JSON.parse(localRaw));}catch(e){}}
+    const localInfo=readLocalState();
     const {data:rows,error}=await sb.from(SUPABASE_TABLE).select('data,revision').eq('user_id',currentUser.id).limit(1);
     if(error)throw error;
     const row=rows&&rows[0];
-    if(row&&row.data&&typeof row.data==='object'&&Array.isArray(row.data.accounts)){
-      const cloudState=normalize(row.data);
-      if(wasDirty&&localState&&JSON.stringify(localState)!==JSON.stringify(cloudState)){
-        state=localState;stateVersion=0;
-        syncMeta.baseRevision=Number(row.revision)||0;syncMeta.dirty=true;saveSyncMeta();
-        localStorage.setItem(STORE_KEY,JSON.stringify(state));
-        sessionReady=true;updateAuthUI(true);hideLogin();hideBoot();
-        renderAll();switchView(activeView||'dashboard');setSyncDot('pending','本机有未同步改动');
-        showSyncConflict(row);return;
+    if(row&&row.data&&typeof row.data==='object'){
+      if(isLegacyState(row.data)){
+        saveLegacyBackup(row.data,'cloud');
+        if(localInfo.has){
+          state=localInfo.state;stateVersion=0;
+          syncMeta.baseRevision=Number(row.revision)||0;
+          syncMeta.dirty=wasDirty;saveSyncMeta();
+          localStorage.setItem(STORE_KEY,JSON.stringify(state));
+        }else{
+          state=defaultState();stateVersion=0;
+          syncMeta.baseRevision=Number(row.revision)||0;
+          syncMeta.dirty=false;saveSyncMeta();
+          localStorage.setItem(STORE_KEY,JSON.stringify(state));
+        }
+      }else{
+        const cloudState=normalizeV2(row.data);
+        localStorage.setItem(LEGACY_BANNER_KEY,'1');
+        if(wasDirty&&localInfo.has&&JSON.stringify(localInfo.state)!==JSON.stringify(cloudState)){
+          state=localInfo.state;stateVersion=0;
+          syncMeta.baseRevision=Number(row.revision)||0;
+          syncMeta.dirty=true;saveSyncMeta();
+          localStorage.setItem(STORE_KEY,JSON.stringify(state));
+          sessionReady=true;updateAuthUI(true);hideLogin();hideBoot();
+          renderAll();switchView(activeView||'dashboard');setSyncDot('pending','本机有未同步改动');
+          showSyncConflict(row);return;
+        }
+        state=cloudState;stateVersion=0;
+        syncMeta.baseRevision=Number(row.revision)||0;
+        syncMeta.dirty=false;
+        localStorage.setItem(STORE_KEY,JSON.stringify(state));saveSyncMeta();
       }
-      state=cloudState;stateVersion=0;
-      syncMeta.baseRevision=Number(row.revision)||0;syncMeta.dirty=false;
-      localStorage.setItem(STORE_KEY,JSON.stringify(state));saveSyncMeta();
     }else{
-      state=localState||defaultState();stateVersion=0;
+      localStorage.setItem(LEGACY_BANNER_KEY,'1');
+      state=localInfo.state||defaultState();stateVersion=0;
       syncMeta.baseRevision=row?(Number(row.revision)||0):0;
       if(!row){
         const ins=await sb.from(SUPABASE_TABLE).insert({user_id:currentUser.id,data:state,revision:1,updated_at:new Date().toISOString()}).select('revision');
-        if(ins.error)throw ins.error;syncMeta.baseRevision=1;
+        if(ins.error)throw ins.error;
+        syncMeta.baseRevision=1;
       }else{
         const upd=await sb.from(SUPABASE_TABLE).update({data:state,revision:syncMeta.baseRevision+1,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id).eq('revision',syncMeta.baseRevision).select('revision');
         if(upd.error)throw upd.error;
@@ -456,9 +556,10 @@ async function startCloudSession(){
       }
       syncMeta.dirty=false;localStorage.setItem(STORE_KEY,JSON.stringify(state));saveSyncMeta();
     }
+    syncMeta.lastSyncAt=nowISO();saveSyncMeta();
     sessionReady=true;updateAuthUI(true);hideLogin();hideBoot();
+    if(syncMeta.dirty)scheduleCloudPush();
     renderAll();switchView(activeView||'dashboard');setSyncDot('ok','已连接云端');
-    afterStateReady();
   }catch(e){
     sessionReady=false;state=null;hideBoot();showLogin();
     showLoginError('无法加载云端数据：'+friendlyError(e));
@@ -483,7 +584,7 @@ async function doLogin(){
   }finally{btn.disabled=false;}
 }
 async function doLogout(){
-  if(!confirm('退出登录后，本设备缓存的“多多”数据会被清除；云端数据保留。确定退出？'))return;
+  if(!confirm('退出登录后，本设备缓存的多多数据会被清除；云端数据保留。确定退出？'))return;
   try{if(sb)await sb.auth.signOut({scope:'local'});}catch(e){console.error('[auth] signOut failed',e);try{localStorage.removeItem('sb-gqjbtbxtkiptjeryqawd-auth-token');}catch(_){}}
   currentUser=null;sessionReady=false;clearLocalData();updateAuthUI(false);location.reload();
 }
@@ -499,126 +600,718 @@ async function bootAuth(){
   }catch(e){hideBoot();showLogin();showLoginError('无法检查登录状态：'+friendlyError(e));}
   finally{booting=false;}
 }
-function backupState(label){try{const stamp=new Date().toISOString().replace(/[:.]/g,'-');localStorage.setItem(BACKUP_PREFIX+stamp+'_'+label,JSON.stringify(state));const keys=listBackupKeys();keys.slice(8).forEach(k=>localStorage.removeItem(k));}catch(e){console.warn('backup failed',e);}}
+
+function backupState(label){
+  try{
+    const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+    localStorage.setItem(BACKUP_PREFIX+stamp+'_'+(label||'save'),JSON.stringify(state));
+    const keys=listBackupKeys();keys.slice(8).forEach(k=>localStorage.removeItem(k));
+  }catch(e){console.warn('backup failed',e);}
+}
 function listBackupKeys(){const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(BACKUP_PREFIX))keys.push(k);}return keys.sort().reverse();}
 function listBackups(){return listBackupKeys().map(k=>{const raw=localStorage.getItem(k)||'';const parts=k.slice(BACKUP_PREFIX.length).split('_');return {key:k,label:parts.slice(1).join('_')||'save',time:parts[0]||'',size:raw.length};});}
-function restoreBackup(key){const raw=localStorage.getItem(key);if(!raw)return toast('备份不存在','err');try{state=normalize(JSON.parse(raw));saveState({backup:true,label:'before_restore'});renderAll();toast('已恢复备份','ok');}catch(e){toast('备份损坏，无法恢复','err');}}
-function allAccounts(includeArchived=false){return state.accounts.filter(a=>includeArchived||!a.archived);}
-function groups(){return allAccounts().filter(a=>a.kind==='group').sort((a,b)=>(a.order||0)-(b.order||0));}
-function childrenOf(parentId){return allAccounts().filter(a=>a.parentId===parentId).sort((a,b)=>(a.order||0)-(b.order||0));}
-function getAccount(id){return state.accounts.find(a=>a.id===id);}
-function groupById(id){return state.allocationGroups.find(g=>g.id===id);}
+function restoreBackup(key){
+  const raw=localStorage.getItem(key);if(!raw)return toast('备份不存在','err');
+  let data=null;try{data=JSON.parse(raw);}catch(e){return toast('备份损坏，无法恢复','err');}
+  if(isLegacyState(data))return toast('该备份是旧版数据，不能恢复到 v0.4','err');
+  backupState('before_restore');
+  state=normalizeV2(data);draft=null;cfgEditing=false;cfgDraft=null;
+  saveState({backup:true,label:'restore'});
+  renderAll();toast('已恢复备份','ok');
+}
+
+function groups(){return state.accounts.filter(a=>a.kind==='group').sort((a,b)=>num(a.order)-num(b.order)||String(a.name).localeCompare(String(b.name),'zh-CN'));}
+function allLeaves(){return state.accounts.filter(a=>a.kind==='leaf');}
+function manualLeaves(){return allLeaves().filter(l=>!l.fallback);}
+function childrenOf(parentId){return allLeaves().filter(l=>l.parentId===parentId).sort((a,b)=>num(a.order)-num(b.order)||String(a.name).localeCompare(String(b.name),'zh-CN'));}
+function groupById(id){return groups().find(g=>g.id===id)||null;}
 function groupName(id){const g=groupById(id);return g?g.name:'未分组';}
-function groupColor(id){const g=groupById(id);return g?g.color:'#9aa3ae';}
-function cfgAccounts(){return cfgDraft?cfgDraft.accounts:state.accounts;}
-function cfgAllocationGroups(){return cfgDraft?cfgDraft.allocationGroups:state.allocationGroups;}
-function cfgHoldingSettings(){return cfgDraft?cfgDraft.holdingSettings:state.holdingSettings;}
-function cfgHoldingSetting(code){const hs=cfgHoldingSettings();return hs[code]||{};}
-function cfgCategory(id){return cfgAllocationGroups().find(g=>g.id===id)||null;}
-function cfgCategoryName(id){const g=cfgCategory(id);return g?g.name:'未分类';}
-function cfgCategoryColor(id){const g=cfgCategory(id);return g?g.color:'#9aa3ae';}
-function accountTypeOf(a){
-  if(!a)return 'cash';
-  if(a.source==='investment_platform')return 'holding';
-  if(a.isLiability)return a.pool==='other'?'long_liability':'short_liability';
-  if(a.measure==='gold_accumulation')return 'gold';
-  if(a.source==='fixed')return 'fixed';
-  if(a.source==='fund')return 'fund';
-  if(a.pool==='invest')return 'invest';
-  if(a.pool==='other')return 'other_asset';
-  return 'cash';
+function currentHoldings(){const i=latestImport();return i&&Array.isArray(i.holdings)?i.holdings:[];}
+function latestImport(){return state&&state.imports.length?state.imports[state.imports.length-1]:null;}
+function holdingMV(h){return num(h.shares)*num(h.currentPrice);}
+function currentHoldingSettings(){return cfgEditing&&cfgDraft?cfgDraft.holdingSettings:(state?state.holdingSettings:{});}
+function etfItems(){
+  const hs=currentHoldingSettings();
+  return currentHoldings().map(h=>{const st=hs[h.code]||{};return {key:'h:'+h.code,holdingCode:h.code,parentId:SYSTEM_GROUP_ID,name:h.name,code:h.code,categoryId:st.categoryId||null,amount:holdingMV(h),order:num(st.order)||num(h.order)||0,isEtf:true};}).sort((a,b)=>a.order-b.order||String(a.name).localeCompare(String(b.name),'zh-CN'));
 }
-function accountTypeLabel(t){const x=ACCOUNT_TYPES.find(v=>v.id===t);return x?x.label:(t==='holding'?'场内':'现金');}
-function ensureFixedMeta(a){
-  a.meta=a.meta&&typeof a.meta==='object'?a.meta:{};
-  a.meta=Object.assign({principal:0,startDate:'',endDate:'',rate:0,interestMethod:'simple',maturityAction:'cash',linkedAccountId:''},a.meta);
+function visibleLeaves(){
+  const manual=manualLeaves().filter(l=>groups().some(g=>g.id===l.parentId));
+  const etfs=etfItems();
+  if(etfs.length)return [...manual,...etfs];
+  const fb=allLeaves().find(l=>l.id===FALLBACK_LEAF_ID);
+  return fb?[...manual,fb]:manual;
 }
-function applyAccountType(a,type){
-  const cur=accountTypeOf(a);
-  if(cur===type)return;
-  Object.assign(a,{isLiability:false,pool:'liquid',measure:'amount',source:'manual',isConsumptionAccount:false,isLiquid:false});
-  if(type==='cash'){a.isConsumptionAccount=true;a.isLiquid=true;}
-  else if(type==='invest'){a.pool='invest';}
-  else if(type==='gold'){a.pool='invest';a.measure='gold_accumulation';a.quantity=num(a.quantity);a.avgCost=num(a.avgCost);}
-  else if(type==='fixed'){a.pool='invest';a.source='fixed';ensureFixedMeta(a);}
-  else if(type==='fund'){a.pool='invest';a.source='fund';a.cost=num(a.cost);}
-  else if(type==='short_liability'){a.isLiability=true;a.isLiquid=true;}
-  else if(type==='other_asset'){a.pool='other';}
-  else if(type==='long_liability'){a.isLiability=true;a.pool='other';}
-  if(a.isLiability){const v=Math.abs(num(a.balance)||num(a.marketValue));a.balance=-v;a.marketValue=a.balance;}
-  else{a.balance=Math.abs(num(a.balance));a.marketValue=Math.abs(num(a.marketValue));}
+function groupSubtotal(groupId){
+  if(groupId===SYSTEM_GROUP_ID){
+    const etfs=etfItems();
+    if(etfs.length)return etfs.reduce((s,e)=>s+num(e.amount),0);
+    const fb=allLeaves().find(l=>l.id===FALLBACK_LEAF_ID);
+    return fb?num(fb.amount):0;
+  }
+  return childrenOf(groupId).filter(l=>!l.fallback).reduce((s,l)=>s+num(l.amount),0);
 }
-function nextCategoryColor(groups){
-  const used=new Set((groups||[]).map(g=>String(g.color||'').toUpperCase()));
-  return CFG_COLORS.find(c=>!used.has(c.toUpperCase()))||CFG_COLORS[(groups||[]).length%CFG_COLORS.length];
+function totalAssets(){return visibleLeaves().reduce((s,l)=>s+num(l.amount),0);}
+function allocationData(){
+  const total=totalAssets();
+  const items=visibleLeaves().map(l=>({key:l.key||('a:'+l.id),name:l.name,groupId:l.parentId,categoryId:l.categoryId||null,amount:num(l.amount),isEtf:!!l.isEtf}));
+  const rows=state.allocationGroups.map(g=>{
+    const arr=items.filter(it=>it.categoryId===g.id);
+    const amount=arr.reduce((s,x)=>s+x.amount,0);
+    return {id:g.id,name:g.name,color:g.color,amount,pct:total>0?amount/total*100:null,count:arr.length};
+  });
+  const uncat=items.filter(it=>!it.categoryId||!state.allocationGroups.some(g=>g.id===it.categoryId));
+  if(uncat.length){
+    const amount=uncat.reduce((s,x)=>s+x.amount,0);
+    rows.push({id:'__none',name:'未分类',color:'#9aa3ae',amount,pct:total>0?amount/total*100:null,count:uncat.length});
+  }
+  return {total,items,rows};
 }
-function uniqueCategoryName(groups){
-  const names=new Set((groups||[]).map(g=>String(g.name||'')));
+function openingSnapshot(){return state.snapshots.find(s=>s.type==='opening')||null;}
+function snapshotBefore(date){
+  const list=state.snapshots.filter(s=>String(s.date)<String(date)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  return list.length?list[list.length-1]:null;
+}
+function latestSnapshot(){
+  if(!state)return null;
+  const list=[...state.snapshots].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  return list.length?list[list.length-1]:null;
+}
+function snapshotDelta(){
+  const list=[...state.snapshots].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  if(list.length<2)return null;
+  return num(list[list.length-1].totalAssets)-num(list[list.length-2].totalAssets);
+}
+function monthConsumption(){
+  const mk=monthKey(today());
+  return state.snapshots.filter(s=>s.type==='reconcile'&&String(s.date).slice(0,7)===mk).reduce((sum,s)=>sum+num(s.consumption),0);
+}
+function consumptionTrend(months=6){
+  const res=[];const now=new Date();
+  for(let i=months-1;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    let v=0;
+    state.snapshots.forEach(s=>{if(s.type==='reconcile'&&String(s.date).slice(0,7)===mk)v+=num(s.consumption);});
+    res.push({month:mk,label:(d.getMonth()+1)+'月',value:v});
+  }
+  return res;
+}
+
+function periodFlowList(d){
+  const from=d?d.fromDate:null;
+  const to=d?d.date:today();
+  const saved=state.flows.filter(f=>{
+    if(from&&String(f.date)<=String(from))return false;
+    if(String(f.date)>String(to))return false;
+    return true;
+  }).map(f=>({...f,_draft:false}));
+  const draftFlows=(d&&Array.isArray(d.flows)?d.flows:[]).filter(f=>{
+    if(from&&String(f.date)<=String(from))return false;
+    if(String(f.date)>String(to))return false;
+    return true;
+  }).map(f=>({...f,_draft:true}));
+  return [...saved,...draftFlows].sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.createdAt).localeCompare(String(b.createdAt)));
+}
+function netFlowForKey(d,key){
+  if(!d||!d.fromDate)return 0;
+  let sum=0;
+  periodFlowList(d).forEach(f=>{
+    const amt=num(f.amount);
+    if(f.type==='external_in'&&f.toKey===key)sum+=amt;
+    if(f.type==='external_out'&&f.fromKey===key)sum-=amt;
+    if(f.type==='transfer'){if(f.toKey===key)sum+=amt;if(f.fromKey===key)sum-=amt;}
+  });
+  return sum;
+}
+function findSnapItem(snap,key){return snap&&Array.isArray(snap.items)?snap.items.find(it=>it.key===key)||null:null;}
+function buildReconItems(prevSnap,d){
+  const items=[];
+  visibleLeaves().filter(l=>!l.isEtf).forEach(l=>{
+    const key='a:'+l.id;
+    const prev=findSnapItem(prevSnap,key);
+    const before=prevSnap?(prev?num(prev.actual):0):num(l.amount);
+    const netFlow=netFlowForKey(d,key);
+    items.push({key,id:l.id,holdingCode:null,parentId:l.parentId,groupName:groupName(l.parentId),name:l.name,categoryId:l.categoryId||null,before,netFlow,expected:before+netFlow,actual:num(l.amount),isEtf:false,isFallback:!!l.fallback,explanation:null});
+  });
+  etfItems().forEach(e=>{
+    const key=e.key;
+    const prev=findSnapItem(prevSnap,key);
+    const before=prevSnap?(prev?num(prev.actual):0):num(e.amount);
+    const netFlow=netFlowForKey(d,key);
+    items.push({key,id:null,holdingCode:e.holdingCode,parentId:e.parentId,groupName:groupName(e.parentId),name:e.name,categoryId:e.categoryId||null,before,netFlow,expected:before+netFlow,actual:num(e.amount),isEtf:true,isFallback:false,explanation:null});
+  });
+  return items;
+}
+function rebuildDraftItems(preserve){
+  if(!draft)return;
+  const old=new Map((draft.items||[]).map(it=>[it.key,it]));
+  draft.prevSnap=snapshotBefore(draft.date);
+  draft.fromDate=draft.prevSnap?draft.prevSnap.date:null;
+  const fresh=buildReconItems(draft.prevSnap,draft);
+  fresh.forEach(it=>{
+    const o=old.get(it.key);
+    if(o){
+      if(!it.isEtf&&preserve)it.actual=o.actual;
+      it.explanation=o.explanation;
+    }
+    if(Math.abs(it.actual-it.expected)<=0.005)it.explanation=null;
+    else if(!it.explanation)it.explanation='unexplained';
+  });
+  draft.items=fresh;
+}
+function startReconcile(render){
+  if(!state)return false;
+  const date=today();
+  const latest=latestSnapshot();
+  if(latest&&String(date)<=String(latest.date))return false;
+  const prevSnap=snapshotBefore(date);
+  draft={date,fromDate:prevSnap?prevSnap.date:null,prevSnap,flows:[],items:[],notes:''};
+  draft.items=buildReconItems(prevSnap,draft);
+  draft.items.forEach(it=>{if(Math.abs(it.actual-it.expected)>0.005)it.explanation='unexplained';});
+  if(render!==false)renderReconcile();
+  return true;
+}
+function reconTotals(){
+  const items=draft?draft.items:[];
+  const actual=items.reduce((s,it)=>s+num(it.actual),0);
+  const diff=items.reduce((s,it)=>s+(num(it.actual)-num(it.expected)),0);
+  let consumption=0,floating=0,other=0,unexplained=0;
+  items.forEach(it=>{
+    const d=num(it.actual)-num(it.expected);
+    if(Math.abs(d)<=0.005)return;
+    const e=it.explanation||'unexplained';
+    if(e==='consumption')consumption+=-d;
+    else if(e==='floating')floating+=d;
+    else if(e==='other')other+=d;
+    else unexplained+=d;
+  });
+  return {actual,diff,consumption,floating,other,unexplained};
+}
+function explainLabel(id){const x=EXPLANATIONS.find(e=>e.id===id);return x?x.label:'未解释';}
+function explainOptionsHtml(sel){return EXPLANATIONS.map(e=>`<option value="${e.id}" ${sel===e.id?'selected':''}>${e.label}</option>`).join('');}
+function flowAccountName(key){
+  if(!key)return '—';
+  if(key.startsWith('a:')){const l=allLeaves().find(x=>x.id===key.slice(2));return l?l.name:'—';}
+  if(key.startsWith('h:')){const h=currentHoldings().find(x=>x.code===key.slice(2));return h?h.name:key.slice(2);}
+  return '—';
+}
+function flowAccountOptions(selected,includeEtf){
+  return visibleLeaves().filter(l=>includeEtf||!l.isEtf).map(l=>{const key=l.key||('a:'+l.id);return `<option value="${esc(key)}" ${selected===key?'selected':''}>${esc(groupName(l.parentId)+' / '+l.name)}</option>`;}).join('');
+}
+function flowItemHtml(f){
+  const dir=f.type==='external_in'?'流入':f.type==='external_out'?'流出':'转账';
+  let detail='';
+  if(f.type==='transfer')detail=`${flowAccountName(f.fromKey)} → ${flowAccountName(f.toKey)}`;
+  else if(f.type==='external_in')detail=`→ ${flowAccountName(f.toKey)}`;
+  else detail=`${flowAccountName(f.fromKey)} →`;
+  return `<div class="flow-item"><span class="faint">${esc(f.date)}</span><span>${dir}</span><span>${esc(detail)}</span><span class="grow"></span><span class="num">¥${fmtMoney(f.amount)}</span>${f.note?`<span class="faint">${esc(f.note)}</span>`:''}<button class="icon-btn danger" data-del-flow="${esc(f.id)}" data-draft="${f._draft?'1':'0'}">删除</button></div>`;
+}
+function reconExplainRowsHtml(){
+  if(!draft)return '';
+  const list=draft.items.filter(it=>Math.abs(num(it.actual)-num(it.expected))>0.005);
+  if(!list.length)return '<div class="empty">没有差额需要解释</div>';
+  return list.map(it=>`<div class="explain-row"><span class="nm">${esc(it.groupName)}</span><span class="nm">${esc(it.name)}</span><span class="num ${clsNum(it.actual-it.expected)}">${fmtSigned(it.actual-it.expected)}</span><select data-exp="${esc(it.key)}">${explainOptionsHtml(it.explanation||'unexplained')}</select></div>`).join('');
+}
+function reconExplainTotalsHtml(t){
+  return `<div class="box"><div class="lbl">消费合计</div><div class="val num">¥${fmtMoney(t.consumption)}</div></div><div class="box"><div class="lbl">浮盈浮亏</div><div class="val num ${clsNum(t.floating)}">${fmtSigned(t.floating)}</div></div><div class="box"><div class="lbl">其他</div><div class="val num ${clsNum(t.other)}">${fmtSigned(t.other)}</div></div><div class="box"><div class="lbl">未解释</div><div class="val num ${clsNum(t.unexplained)}">${fmtSigned(t.unexplained)}</div></div><div class="box"><div class="lbl">差额合计</div><div class="val num ${clsNum(t.diff)}">${fmtSigned(t.diff)}</div></div>`;
+}
+function reconTotalsStripHtml(t){
+  const before=draft?draft.items.reduce((s,it)=>s+num(it.before),0):0;
+  const net=draft?draft.items.reduce((s,it)=>s+num(it.netFlow),0):0;
+  return `<div class="box"><div class="lbl">上次余额合计</div><div class="val num">¥${fmtMoney(before)}</div></div><div class="box"><div class="lbl">期间净流入合计</div><div class="val num">${fmtSigned(net)}</div></div><div class="box"><div class="lbl">本次总资产</div><div class="val num">¥${fmtMoney(t.actual)}</div></div><div class="box"><div class="lbl">差额合计</div><div class="val num ${clsNum(t.diff)}">${fmtSigned(t.diff)}</div></div>`;
+}
+
+function renderAll(){
+  if(!state)return;
+  renderLegacyBanner();
+  renderDashboard();
+  if(activeView==='reconcile')renderReconcile();
+  if(activeView==='accounts')renderAccountConfig();
+  if(activeView==='settings')renderSettings();
+  const info=$('#asOfInfo');if(info)info.textContent=`云端同步 · 最近盘点 ${state.settings.lastReconcileDate||'尚未盘点'}`;
+}
+function switchView(v){
+  if(v==='allocation')v='accounts';
+  if(cfgEditing&&v!=='accounts'){if(!confirm('放弃未保存的账户配置修改？'))return;cfgEditing=false;cfgDraft=null;}
+  if(v==='reconcile'&&!draft&&!startReconcile(false)){
+    const latest=latestSnapshot();
+    toast(`最近快照日期为 ${latest?latest.date:'今天'}，盘点日期必须晚于该日期。如需重做，请编辑期初。`,'err');
+    v='dashboard';
+  }
+  activeView=v;
+  $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));
+  $$('.view').forEach(x=>x.classList.remove('active'));
+  const el=$('#view-'+v);if(el)el.classList.add('active');
+  renderAll();
+}
+function renderDashboard(){
+  if(!state)return;
+  const total=totalAssets();
+  const delta=snapshotDelta();
+  const alloc=allocationData();
+  const cons=monthConsumption();
+  const trend=consumptionTrend(6);
+  const maxTrend=Math.max(1,...trend.map(x=>x.value));
+  const manualCount=manualLeaves().filter(l=>groups().some(g=>g.id===l.parentId)).length;
+  const hasAccounts=manualCount>0||currentHoldings().length>0;
+  const opening=openingSnapshot();
+  const hasReconcile=state.snapshots.some(s=>s.type==='reconcile');
+  let guide='';
+  if(!hasAccounts){
+    guide=`<div class="card" style="margin-bottom:14px;border-color:rgba(47,111,237,.28);background:linear-gradient(90deg,rgba(47,111,237,.06),#fff)"><div class="card-head"><h2>先建账户</h2><span class="grow"></span><button class="btn small primary" data-go="accounts">去账户配置</button></div><div class="small muted">新建一级账户和二级账户，金额可正可负。也可以先刷新投资数据导入 ETF。</div></div>`;
+  }else if(!opening&&!hasReconcile){
+    guide=`<div class="card" style="margin-bottom:14px"><div class="card-head"><h2>录入期初</h2><span class="grow"></span><button class="btn small primary" id="btnOpeningGuide">录入期初</button></div><div class="small muted">按上一个自然月最后一天的实际余额录入，作为第一次盘点的起点。</div></div>`;
+  }else if(opening&&!hasReconcile){
+    guide=`<div class="card" style="margin-bottom:14px"><div class="card-head"><h2>开始盘点</h2><span class="grow"></span><button class="btn small primary" id="btnStartGuide">开始盘点</button></div><div class="small muted">期初：${esc(opening.date)}。记录外部资金和转账后，填写各账户实际余额。</div></div>`;
+  }
+  const segs=alloc.rows.filter(r=>r.amount>0).map(r=>`<div class="alloc-seg" style="flex:${r.pct||0};background:${esc(r.color)}" title="${esc(r.name)} ${r.pct==null?'--':fmtPct(r.pct)}"></div>`).join('');
+  const allocRows=alloc.rows.length?alloc.rows.map(r=>`<div class="alloc-row"><span class="dot" style="background:${esc(r.color)}"></span><span class="nm">${esc(r.name)}</span><span class="num">¥${fmtMoney(r.amount)}</span><span class="pct num">${r.pct==null?'--':fmtPct(r.pct)}</span></div>`).join(''):'<div class="empty">还没有配置类别/账户</div>';
+  const trendBars=trend.map(t=>`<div class="trend-col"><div class="trend-bar" style="height:${Math.max(3,t.value/maxTrend*62)}px" title="${t.month} ¥${fmtMoney(t.value)}"></div><div class="trend-lbl">${t.label}</div></div>`).join('');
+  $('#view-dashboard').innerHTML=`
+  ${guide}
+  <div class="grid metric-single">
+    <div class="metric"><div class="lbl">总资产</div><div class="val num">¥${fmtMoney(total)}</div><div class="sub ${delta==null?'':clsNum(delta)}">${delta==null?'暂无对比':(delta>=0?'较上次盘点 +':'较上次盘点 ')+fmtMoney(delta)}</div></div>
+  </div>
+  <div class="grid dash-top">
+    <div class="card"><div class="card-head"><h2>资产配置</h2><span class="faint small">${total>0?'占比按总资产':'总资产 ≤ 0，占比暂不计算'}</span><span class="grow"></span><button class="btn small" data-go="accounts">账户配置</button></div><div class="alloc-stack">${segs||'<div class="alloc-seg" style="flex:1;background:#eef0f4"></div>'}</div><div class="alloc-list">${allocRows}</div>${total<=0?'<div class="note warn">总资产小于等于 0，资产配置占比暂不计算。</div>':''}</div>
+    <div class="card"><div class="card-head"><h2>本月消耗</h2><span class="faint small">${monthKey(today())}</span><span class="grow"></span><button class="btn small" data-go="reconcile">去盘点</button></div><div class="consumption2"><div class="cons-main"><div class="big num">¥${fmtMoney(cons)}</div><div class="line">${state.snapshots.some(s=>s.type==='reconcile')?'当月盘点中解释为“消费”的差额合计':'还没有盘点记录'}</div></div><div><div class="trend-bars">${trendBars}</div><div class="legend"><span>近 6 个月盘点消耗</span></div></div></div></div>
+  </div>`;
+  $$('#view-dashboard [data-go]').forEach(b=>b.onclick=()=>switchView(b.dataset.go));
+  const og=$('#btnOpeningGuide');if(og)og.onclick=openOpeningModal;
+  const sg=$('#btnStartGuide');if(sg)sg.onclick=()=>switchView('reconcile');
+}
+function renderReconcile(){
+  if(!state)return;
+  if(!draft&&!startReconcile(false)){
+    const latest=latestSnapshot();
+    $('#view-reconcile').innerHTML=`<div class="card"><div class="empty">最近快照日期为 ${esc(latest?latest.date:'今天')}，盘点日期必须晚于该日期。如需重做，请到设置/盘点历史编辑期初。</div></div>`;
+    return;
+  }
+  const cache=platformCacheInfo();
+  const t=reconTotals();
+  const flows=periodFlowList(draft);
+  const extFlows=flows.filter(f=>f.type!=='transfer');
+  const transfers=flows.filter(f=>f.type==='transfer');
+  const groupMap=new Map();
+  draft.items.forEach(it=>{if(!groupMap.has(it.parentId))groupMap.set(it.parentId,[]);groupMap.get(it.parentId).push(it);});
+  const ordered=groups().filter(g=>groupMap.has(g.id));
+  const rowsHtml=ordered.map(g=>{
+    const list=groupMap.get(g.id);
+    const sub=list.reduce((s,it)=>s+num(it.actual),0);
+    return `<tr style="background:#f8fafc"><td colspan="6" style="font-weight:650">${esc(g.name)}<span class="tag">${list.length} 项</span><span class="faint small" data-group-sub="${esc(g.id)}" style="float:right">小计 ¥${fmtMoney(sub)}</span></td></tr>`+list.map(it=>{
+      const d=num(it.actual)-num(it.expected);
+      const actualCell=it.isEtf?`<span class="faint">¥${fmtMoney(it.actual)}</span><span class="tag plat">自动</span>`:`<input class="actual num" data-actual="${esc(it.key)}" type="number" step="0.01" inputmode="decimal" value="${it.actual}">`;
+      return `<tr data-key="${esc(it.key)}"><td>${esc(it.name)}${it.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(it.holdingCode||'')}</span>`:it.isFallback?'<span class="tag">兜底</span>':''}${!it.isEtf?` <button class="icon-btn" data-fill-before="${esc(it.key)}" title="填入上次余额">填入</button>`:''}</td><td class="n">¥${fmtMoney(it.before)}</td><td class="n ${clsNum(it.netFlow)}">${fmtSigned(it.netFlow)}</td><td class="n" data-expected="${esc(it.key)}">¥${fmtMoney(it.expected)}</td><td class="n">${actualCell}</td><td class="n ${clsNum(d)}" data-diff="${esc(it.key)}">${fmtSigned(d)}</td></tr>`;
+    }).join('');
+  }).join('');
+  const extOpts=flowAccountOptions('',false);
+  const trOpts=flowAccountOptions('',true);
+  $('#view-reconcile').innerHTML=`
+  <div class="card"><div class="card-head"><h2>盘点</h2><span class="faint small">${draft.prevSnap?'上次基线：'+esc(draft.prevSnap.date):'首次盘点，无基线'} · 行情：${esc(cache.newest||'未知')}</span><span class="grow"></span><button class="btn small" id="btnOpening">${openingSnapshot()?'编辑期初':'录入期初'}</button><button class="btn small" id="btnReconReset">重置</button></div><div class="filters"><label>盘点日期 <input type="date" id="reconDate" value="${esc(draft.date)}"></label><span class="muted small">${draft.prevSnap?'期间净流入按基线日之后的外部资金和转账计算。':'首次盘点以当前余额为起点，期间净流入按 0 计算。'}</span></div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">1</span><h2>外部资金</h2><span class="grow"></span><span class="faint small">只记大额、跨系统的资金进出；日常小额消费留给第 4 步</span></div><div class="flow-list">${extFlows.length?extFlows.map(flowItemHtml).join(''):'<div class="empty">暂无外部资金</div>'}</div><div class="inline-form"><div class="field"><label>日期</label><input type="date" id="flowDate" value="${esc(draft.date)}"></div><div class="field"><label>方向</label><select id="flowDir"><option value="external_in">流入</option><option value="external_out">流出</option></select></div><div class="field"><label>账户</label><select id="flowAcct">${extOpts}</select></div><div class="field"><label>金额</label><input type="number" step="0.01" inputmode="decimal" id="flowAmt" placeholder="0.00"></div><div class="field"><label>备注</label><input id="flowNote" placeholder="可选"></div><button class="btn" id="btnAddFlow">添加</button></div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">2</span><h2>账户间转账</h2><span class="grow"></span><span class="faint small">转出减少、转入增加，不影响总资产</span></div><div class="flow-list">${transfers.length?transfers.map(flowItemHtml).join(''):'<div class="empty">暂无转账</div>'}</div><div class="inline-form transfer"><div class="field"><label>日期</label><input type="date" id="trDate" value="${esc(draft.date)}"></div><div class="field"><label>转出</label><select id="trFrom">${trOpts}</select></div><div class="field"><label>转入</label><select id="trTo">${trOpts}</select></div><div class="field"><label>金额</label><input type="number" step="0.01" inputmode="decimal" id="trAmt" placeholder="0.00"></div><div class="field"><label>备注</label><input id="trNote" placeholder="可选"></div><button class="btn" id="btnAddTransfer">添加</button></div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">3</span><h2>盘点余额</h2><span class="grow"></span><button class="btn small" id="btnFillBefore">全部填入上次余额</button></div><div class="table-wrap"><table class="recon-table"><thead><tr><th>二级账户</th><th class="n">上次余额</th><th class="n">期间净流入</th><th class="n">应有余额</th><th class="n">本次实际</th><th class="n">差额</th></tr></thead><tbody>${rowsHtml||'<tr><td colspan="6" class="empty">还没有账户，请先到账户配置创建二级账户</td></tr>'}</tbody></table></div><div class="summary-strip" id="reconTotals">${reconTotalsStripHtml(t)}</div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">4</span><h2>差异解释</h2><span class="grow"></span><button class="btn small" id="btnAllUnexplained">全部标为未解释</button></div><div class="explain-list" id="reconExplainBody">${reconExplainRowsHtml()}</div><div class="summary-strip five" id="reconExplainTotals">${reconExplainTotalsHtml(t)}</div></div>
+  <div class="card step-card"><div class="form-grid"><div class="field wide"><label>盘点备注</label><input id="reconNotes" placeholder="可选" value="${esc(draft.notes||'')}"></div></div><div class="form-actions"><button class="btn" id="btnReconCancel">取消</button><button class="btn primary" id="btnReconSave">保存盘点</button></div></div>`;
+  bindReconcileEvents();
+}
+function bindExplainEvents(){
+  $$('#view-reconcile [data-exp]').forEach(sel=>sel.onchange=()=>{const it=draft.items.find(x=>x.key===sel.dataset.exp);if(!it)return;it.explanation=sel.value;updateReconDerived();});
+}
+function bindReconcileEvents(){
+  const rd=$('#reconDate');
+  if(rd)rd.onchange=e=>{
+    const d=e.target.value;
+    if(!parseDate(d)){e.target.value=draft.date;return;}
+    const latest=latestSnapshot();
+    if(latest&&String(d)<=String(latest.date)){toast('盘点日期必须晚于上次盘点/期初日期','err');e.target.value=draft.date;return;}
+    const newPrev=snapshotBefore(d);
+    const newFrom=newPrev?newPrev.date:null;
+    const outside=draft.flows.filter(f=>String(f.date)>String(d)||(newFrom&&String(f.date)<=String(newFrom)));
+    if(outside.length&&!confirm(`有 ${outside.length} 条新增资金/转账不在新盘点期间，将移除。继续？`)){e.target.value=draft.date;return;}
+    if(outside.length)draft.flows=draft.flows.filter(f=>!outside.includes(f));
+    draft.date=d;rebuildDraftItems(true);renderReconcile();
+  };
+  $$('#view-reconcile [data-actual]').forEach(inp=>inp.oninput=()=>{
+    const it=draft.items.find(x=>x.key===inp.dataset.actual);if(!it)return;
+    it.actual=num(inp.value);
+    const d=it.actual-it.expected;
+    if(Math.abs(d)<=0.005)it.explanation=null;else if(!it.explanation)it.explanation='unexplained';
+    updateReconDerived();
+  });
+  $$('#view-reconcile [data-fill-before]').forEach(b=>b.onclick=()=>{const it=draft.items.find(x=>x.key===b.dataset.fillBefore);if(!it)return;it.actual=it.before;it.explanation=null;renderReconcile();});
+  bindExplainEvents();
+  const addFlow=$('#btnAddFlow');if(addFlow)addFlow.onclick=()=>addDraftFlow('external');
+  const addTr=$('#btnAddTransfer');if(addTr)addTr.onclick=()=>addDraftFlow('transfer');
+  $$('#view-reconcile [data-del-flow]').forEach(b=>b.onclick=()=>deleteDraftFlow(b.dataset.delFlow,b.dataset.draft==='1'));
+  const fill=$('#btnFillBefore');if(fill)fill.onclick=()=>{draft.items.forEach(it=>{if(it.isEtf)return;it.actual=it.before;it.explanation=null;});renderReconcile();};
+  const allU=$('#btnAllUnexplained');if(allU)allU.onclick=()=>{draft.items.forEach(it=>{if(Math.abs(it.actual-it.expected)>0.005)it.explanation='unexplained';});renderReconcile();};
+  const notes=$('#reconNotes');if(notes)notes.oninput=e=>draft.notes=e.target.value;
+  const reset=$('#btnReconReset');if(reset)reset.onclick=()=>{if(confirm('重置本次盘点的临时输入和新增的外部资金/转账？已保存的数据不受影响。')){if(startReconcile(false))renderReconcile();else{draft=null;switchView('dashboard');}}};
+  const opening=$('#btnOpening');if(opening)opening.onclick=openOpeningModal;
+  const cancel=$('#btnReconCancel');if(cancel)cancel.onclick=()=>{const hasChanges=draft&&(draft.flows.length>0||draft.items.some(it=>Math.abs(it.actual-it.expected)>0.005)||String(draft.notes||'').trim());if(hasChanges&&!confirm('放弃本次盘点的临时输入？'))return;draft=null;switchView('dashboard');};
+  const save=$('#btnReconSave');if(save)save.onclick=saveReconcile;
+}
+function updateReconDerived(){
+  if(!draft)return;
+  const t=reconTotals();
+  const strip=$('#reconTotals');if(strip)strip.innerHTML=reconTotalsStripHtml(t);
+  $$('#view-reconcile [data-diff]').forEach(td=>{const it=draft.items.find(x=>x.key===td.dataset.diff);if(!it)return;const d=it.actual-it.expected;td.textContent=fmtSigned(d);td.className='n '+clsNum(d);});
+  const gTotals={};
+  draft.items.forEach(it=>{gTotals[it.parentId]=(gTotals[it.parentId]||0)+num(it.actual);});
+  $$('#view-reconcile [data-group-sub]').forEach(el=>{el.textContent=`小计 ¥${fmtMoney(gTotals[el.dataset.groupSub]||0)}`;});
+  const body=$('#reconExplainBody');if(body)body.innerHTML=reconExplainRowsHtml();
+  const et=$('#reconExplainTotals');if(et)et.innerHTML=reconExplainTotalsHtml(t);
+  bindExplainEvents();
+}
+function addDraftFlow(kind){
+  if(!draft)return;
+  if(kind==='external'){
+    const date=$('#flowDate').value||draft.date;const type=$('#flowDir').value;const acct=$('#flowAcct').value;const amt=num($('#flowAmt').value);const note=$('#flowNote').value.trim();
+    if(draft.fromDate&&String(date)<=String(draft.fromDate))return toast('日期必须晚于上次基线日','err');
+    if(String(date)>String(draft.date))return toast('日期不能晚于盘点日期','err');
+    if(!acct)return toast('请选择账户','err');
+    if(amt<=0)return toast('请输入大于 0 的金额','err');
+    draft.flows.push({id:uid(),date,type,amount:amt,fromKey:type==='external_out'?acct:null,toKey:type==='external_in'?acct:null,note,createdAt:nowISO()});
+  }else{
+    const date=$('#trDate').value||draft.date;const from=$('#trFrom').value;const to=$('#trTo').value;const amt=num($('#trAmt').value);const note=$('#trNote').value.trim();
+    if(draft.fromDate&&String(date)<=String(draft.fromDate))return toast('日期必须晚于上次基线日','err');
+    if(String(date)>String(draft.date))return toast('日期不能晚于盘点日期','err');
+    if(!from||!to)return toast('请选择转出和转入账户','err');
+    if(from===to)return toast('转出与转入不能相同','err');
+    if(amt<=0)return toast('请输入大于 0 的金额','err');
+    draft.flows.push({id:uid(),date,type:'transfer',amount:amt,fromKey:from,toKey:to,note,createdAt:nowISO()});
+  }
+  rebuildDraftItems(true);renderReconcile();
+}
+function deleteDraftFlow(id,isDraft){
+  if(!draft)return;
+  if(isDraft){draft.flows=draft.flows.filter(f=>f.id!==id);}
+  else{state.flows=state.flows.filter(f=>f.id!==id);saveState({backup:true,label:'flow_delete'});}
+  rebuildDraftItems(true);renderReconcile();
+}
+function saveReconcile(){
+  if(!draft)return;
+  const date=draft.date;
+  if(!parseDate(date))return toast('请选择有效的盘点日期','err');
+  const latest=latestSnapshot();
+  if(latest&&String(date)<=String(latest.date))return toast('盘点日期必须晚于上次盘点/期初日期','err');
+  const badFlow=draft.flows.find(f=>String(f.date)>String(date)||(draft.fromDate&&String(f.date)<=String(draft.fromDate)));
+  if(badFlow)return toast('有新增资金/转账的日期不在本次盘点期间，请调整盘点日期或重置本次盘点','err');
+  if(!draft.items.length)return toast('没有可盘点的账户，请先到账户配置创建二级账户','err');
+  const t=reconTotals();
+  const items=draft.items.map(it=>{
+    const diff=num(it.actual)-num(it.expected);
+    const exp=Math.abs(diff)<=0.005?null:(it.explanation||'unexplained');
+    return {key:it.key,accountId:it.isEtf?null:it.id,holdingCode:it.holdingCode||null,parentId:it.parentId,groupName:it.groupName,name:it.name,categoryId:it.categoryId||null,before:num(it.before),netFlow:num(it.netFlow),expected:num(it.expected),actual:num(it.actual),diff,explanation:exp,isEtf:!!it.isEtf,isFallback:!!it.isFallback};
+  });
+  const snap={id:uid(),date,type:'reconcile',createdAt:nowISO(),totalAssets:t.actual,consumption:t.consumption,floatingPnl:t.floating,other:t.other,unexplained:t.unexplained,totalDiff:t.diff,fromDate:draft.fromDate,notes:draft.notes||'',items};
+  items.forEach(it=>{if(it.isEtf)return;const leaf=allLeaves().find(l=>l.id===it.accountId);if(leaf)leaf.amount=it.actual;});
+  const committed=draft.flows.map(f=>({...f,snapshotId:snap.id}));
+  state.flows.push(...committed);
+  state.snapshots.push(snap);
+  state.snapshots.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  state.settings.lastReconcileDate=date;
+  saveState({backup:true,label:'reconcile'});
+  draft=null;
+  renderAll();switchView('dashboard');
+  const monthCons=monthConsumption();
+  let msg=`盘点已保存，总资产 ¥${fmtMoney(t.actual)}，本月消费 ¥${fmtMoney(monthCons)}。`;
+  if(Math.abs(t.unexplained)>0.005)msg+=` 未解释差额 ¥${fmtMoney(t.unexplained)}。`;
+  toast(msg,Math.abs(t.unexplained)>0.005?'':'ok');
+}
+
+function openingRows(){
+  const existing=openingSnapshot();
+  const rows=[];
+  groups().forEach(g=>{
+    if(g.id===SYSTEM_GROUP_ID){
+      const etfs=etfItems();
+      if(etfs.length){
+        etfs.forEach(e=>{const prev=findSnapItem(existing,e.key);rows.push({key:e.key,id:null,holdingCode:e.holdingCode,parentId:g.id,groupName:g.name,name:e.name,categoryId:e.categoryId,current:num(e.amount),value:prev?num(prev.actual):num(e.amount),isEtf:true,isFallback:false});});
+      }else{
+        const fb=allLeaves().find(l=>l.id===FALLBACK_LEAF_ID);
+        if(fb){const key='a:'+fb.id;const prev=findSnapItem(existing,key);rows.push({key,id:fb.id,holdingCode:null,parentId:g.id,groupName:g.name,name:fb.name,categoryId:fb.categoryId,current:num(fb.amount),value:prev?num(prev.actual):num(fb.amount),isEtf:false,isFallback:true});}
+      }
+      return;
+    }
+    childrenOf(g.id).filter(l=>!l.fallback).forEach(l=>{const key='a:'+l.id;const prev=findSnapItem(existing,key);rows.push({key,id:l.id,holdingCode:null,parentId:g.id,groupName:g.name,name:l.name,categoryId:l.categoryId,current:num(l.amount),value:prev?num(prev.actual):num(l.amount),isEtf:false,isFallback:false});});
+  });
+  return rows;
+}
+function openOpeningModal(){
+  if(!state)return;
+  const existing=openingSnapshot();
+  const openingDate=existing?existing.date:lastDayPrevMonth();
+  const rows=openingRows();
+  if(!rows.length){
+    const ov=openModal(`<div class="modal-head"><h3>录入期初</h3></div><div class="note warn">还没有账户，请先到账户配置创建一级/二级账户。</div><div class="form-actions"><button class="btn" data-close>取消</button><button class="btn primary" id="btnGoAccounts">去账户配置</button></div>`);
+    const b=ov.querySelector('#btnGoAccounts');if(b)b.onclick=()=>{closeModal();switchView('accounts');};
+    return;
+  }
+  const byGroup=new Map();
+  rows.forEach(r=>{if(!byGroup.has(r.parentId))byGroup.set(r.parentId,[]);byGroup.get(r.parentId).push(r);});
+  const groupHtml=[...byGroup.entries()].map(([gid,list])=>{
+    const g=groupById(gid)||{name:groupName(gid)};
+    return `<div class="card" style="margin-bottom:10px"><div class="card-head"><h2>${esc(g.name)}</h2><span class="grow"></span><span class="faint small num" data-group-total="${esc(gid)}">小计 ¥0.00</span></div><div class="table-wrap"><table><thead><tr><th>二级账户</th><th class="n">期初金额</th></tr></thead><tbody>${list.map(r=>`<tr><td>${esc(r.name)}${r.isEtf?`<span class="tag plat">ETF</span><span class="code">${esc(r.holdingCode||'')}</span>`:r.isFallback?'<span class="tag">兜底</span>':''}</td><td class="n"><input class="actual num" data-open-key="${esc(r.key)}" data-open-group="${esc(r.parentId)}" data-open-cur="${r.current}" type="number" step="0.01" inputmode="decimal" value="${r.value}"></td></tr>`).join('')}</tbody></table></div></div>`;
+  }).join('');
+  const noManual=!rows.some(r=>!r.isEtf&&!r.isFallback);
+  const ov=openModal(`<div class="modal-head"><h3>${existing?'编辑期初':'录入期初'}</h3></div><div class="note">按该日期的实际余额填写。金额可正可负：资产填正数，负债填负数。期初不计算盈亏和消耗。</div>${noManual?'<div class="note">还没有手工账户，可先到账户配置创建，或直接填写证券账户总额/刷新 ETF。</div>':''}<div class="filters"><label>期初日期 <input type="date" id="openDate" value="${esc(openingDate)}"></label><span class="faint small">建议：上一个自然月最后一天</span></div>${groupHtml}<div class="summary-strip" id="openTotals"></div><div class="form-actions">${noManual?'<button class="btn" id="btnOpeningGoAccounts">去账户配置</button>':''}<button class="btn" id="btnOpenFill">填入当前余额</button><button class="btn" id="btnOpenZero">清空</button><span class="grow"></span><button class="btn" data-close>取消</button><button class="btn primary" id="btnSaveOpening">确定</button></div>`,{wide:true});
+  const go=ov.querySelector('#btnOpeningGoAccounts');if(go)go.onclick=()=>{closeModal();switchView('accounts');};
+  const recalc=()=>{
+    let total=0;const groupTotals={};
+    document.querySelectorAll('[data-open-key]').forEach(el=>{const v=num(el.value);total+=v;const g=el.dataset.openGroup;groupTotals[g]=(groupTotals[g]||0)+v;});
+    const totals=$('#openTotals');
+    if(totals)totals.innerHTML=`<div class="box"><div class="lbl">期初总资产</div><div class="val num">¥${fmtMoney(total)}</div></div><div class="box"><div class="lbl">账户数</div><div class="val num">${rows.length}</div></div><div class="box"><div class="lbl">期初日期</div><div class="val num">${esc($('#openDate').value||openingDate)}</div></div><div class="box"><div class="lbl">说明</div><div class="val small" style="font-weight:400">负债请填负数</div></div>`;
+    document.querySelectorAll('[data-group-total]').forEach(el=>{const g=el.dataset.groupTotal;el.textContent=`小计 ¥${fmtMoney(groupTotals[g]||0)}`;});
+  };
+  document.querySelectorAll('[data-open-key]').forEach(el=>el.oninput=recalc);
+  $('#openDate').onchange=recalc;
+  $('#btnOpenFill').onclick=()=>{document.querySelectorAll('[data-open-key]').forEach(el=>{el.value=el.dataset.openCur||'0';});recalc();};
+  $('#btnOpenZero').onclick=()=>{document.querySelectorAll('[data-open-key]').forEach(el=>{el.value='';});recalc();};
+  $('#btnSaveOpening').onclick=()=>saveOpeningBaseline(rows);
+  recalc();
+}
+function saveOpeningBaseline(rows){
+  const date=$('#openDate').value||lastDayPrevMonth();
+  if(!parseDate(date))return toast('请选择有效的期初日期','err');
+  const vals={};
+  rows.forEach(r=>{const inp=document.querySelector(`[data-open-key="${CSS.escape(r.key)}"]`);vals[r.key]=inp?num(inp.value):0;});
+  const hasManual=rows.some(r=>!r.isEtf&&!r.isFallback);
+  const hasEtf=rows.some(r=>r.isEtf);
+  const hasFallbackValue=rows.some(r=>r.isFallback&&Math.abs(vals[r.key])>0.005);
+  if(!hasManual&&!hasEtf&&!hasFallbackValue)return toast('还没有账户或金额，请先创建手工账户或刷新 ETF','err');
+  if(state.snapshots.length&&!confirm(`保存后将删除现有期初及之后的所有盘点记录（共 ${state.snapshots.length} 条）。继续？`))return;
+  backupState('before_opening');
+  rows.forEach(r=>{if(r.isEtf)return;const leaf=allLeaves().find(l=>l.id===r.id);if(leaf)leaf.amount=vals[r.key];});
+  const items=rows.map(r=>({key:r.key,accountId:r.isEtf?null:r.id,holdingCode:r.holdingCode||null,parentId:r.parentId,groupName:r.groupName,name:r.name,categoryId:r.categoryId||null,before:vals[r.key],netFlow:0,expected:vals[r.key],actual:vals[r.key],diff:0,explanation:null,isEtf:!!r.isEtf,isFallback:!!r.isFallback}));
+  const total=items.reduce((s,x)=>s+num(x.actual),0);
+  state.snapshots=[{id:uid(),date,type:'opening',createdAt:nowISO(),totalAssets:total,consumption:0,floatingPnl:0,other:0,unexplained:0,totalDiff:0,fromDate:null,notes:'期初',items}];
+  state.settings.lastReconcileDate=date;
+  saveState({backup:true,label:'opening'});
+  closeModal();draft=null;renderAll();switchView('dashboard');
+  toast(`期初已保存：${date} · 总资产 ¥${fmtMoney(total)}`,'ok');
+}
+
+function nextCategoryColor(gs){
+  const used=new Set((gs||[]).map(g=>String(g.color||'').toUpperCase()));
+  return CFG_COLORS.find(c=>!used.has(c.toUpperCase()))||CFG_COLORS[(gs||[]).length%CFG_COLORS.length];
+}
+function uniqueCategoryName(gs){
+  const names=new Set((gs||[]).map(g=>String(g.name||'')));
   if(!names.has('新类别'))return '新类别';
   let i=2;while(names.has('新类别 '+i))i++;
   return '新类别 '+i;
 }
-function defaultLeafTypeForGroup(name){
-  const n=String(name||'');
-  if(/证券/.test(n))return null;
-  if(/基金/.test(n))return 'fund';
-  if(/定存|存款/.test(n))return 'fixed';
-  if(/黄金|积存/.test(n))return 'gold';
-  if(/负债|信用/.test(n))return 'short_liability';
-  return 'cash';
-}
-function cfgTypeSummary(a){
-  if(!a)return '';
-  const t=accountTypeOf(a);
-  if(t==='gold')return num(a.avgCost)?`均价 ¥${fmtMoney(a.avgCost)}/g`:'均价未填';
-  if(t==='fixed'){ensureFixedMeta(a);const m=a.meta;return `${num(m.rate)?fmtPct(m.rate):'利率未填'} · ${m.startDate||'—'} → ${m.endDate||'—'}`;}
-  if(t==='fund')return num(a.cost)?`累计投入 ¥${fmtMoney(a.cost)}`:'累计投入未填';
-  if(t==='short_liability'||t==='long_liability')return '负债';
-  if(t==='holding')return '自动同步';
-  return '';
-}
-function cfgCategoryChip(id){
-  const g=cfgCategory(id);
+function cfgCategoryChip(id,cats){
+  const g=(cats||[]).find(x=>x.id===id);
   return `<span class="cat-chip${g?'':' muted'}"><span class="dot" style="background:${g?esc(g.color):'#9aa3ae'}"></span>${esc(g?g.name:'未分类')}</span>`;
 }
-function latestImport(){return state.imports.length?state.imports[state.imports.length-1]:null;}
-function currentHoldings(){return latestImport()?.holdings||[];}
-function holdingMV(h){return num(h.shares)*num(h.currentPrice);}
-function holdingCost(h){return num(h.shares)*num(h.avgCost);}
-function holdingSetting(code){return state.holdingSettings[code]||{};}
-function leafMV(a){if(!a)return 0;if(a.isLiability)return num(a.balance);if(a.source==='investment_platform')return holdingMV(currentHoldings().find(h=>h.code===a.externalId))||num(a.marketValue);if(a.measure==='gold_accumulation')return num(a.marketValue);if(a.pool==='liquid')return num(a.balance);return num(a.marketValue);}
-function leafCost(a){if(!a||a.isLiability)return 0;if(a.source==='investment_platform')return holdingCost(currentHoldings().find(h=>h.code===a.externalId));if(a.measure==='gold_accumulation')return num(a.avgCost)*num(a.quantity);return num(a.cost);}
-function accountMV(a){if(!a)return 0;if(a.kind==='leaf')return leafMV(a);let sum=0;if(a.holdingsSource==='investment_platform')sum+=currentHoldings().reduce((s,h)=>s+holdingMV(h),0);childrenOf(a.id).forEach(c=>{if(c.kind==='leaf'&&c.source==='investment_platform'&&c.isDetail)return;sum+=accountMV(c);});return sum;}
-function accountCost(a){if(!a)return 0;if(a.kind==='leaf')return leafCost(a);let sum=0;if(a.holdingsSource==='investment_platform')sum+=currentHoldings().reduce((s,h)=>s+holdingCost(h),0);childrenOf(a.id).forEach(c=>{if(c.kind==='leaf'&&c.source==='investment_platform'&&c.isDetail)return;sum+=accountCost(c);});return sum;}
-function detailLeaves(){return allAccounts().filter(a=>a.kind==='leaf'&&a.source==='investment_platform'&&a.isDetail);}
-function totalAssets(){let sum=0;allAccounts().forEach(a=>{if(a.kind!=='leaf'||a.isLiability)return;if(a.source==='investment_platform')return;sum+=leafMV(a);});sum+=currentHoldings().reduce((s,h)=>s+holdingMV(h),0);return sum;}
-function totalLiabilities(){return allAccounts().filter(a=>a.kind==='leaf'&&a.isLiability).reduce((s,a)=>s+Math.abs(leafMV(a)),0);}
-function netWorth(){return totalAssets()-totalLiabilities();}
-function liquidNet(){return allAccounts().filter(a=>a.kind==='leaf'&&a.pool==='liquid'&&!(a.source==='investment_platform'&&a.isDetail)).reduce((s,a)=>s+leafMV(a),0);}
-function investmentAssets(){let sum=currentHoldings().reduce((s,h)=>s+holdingMV(h),0);allAccounts().forEach(a=>{if(a.kind!=='leaf'||a.pool!=='invest')return;if(a.source==='investment_platform')return;sum+=leafMV(a);});return sum;}
-function investmentCost(){let sum=currentHoldings().reduce((s,h)=>s+holdingCost(h),0);allAccounts().forEach(a=>{if(a.kind!=='leaf'||a.pool!=='invest')return;if(a.source==='investment_platform')return;sum+=leafCost(a);});return sum;}
-function summarizeGold(leaves){const arr=Array.isArray(leaves)?leaves:[];const grams=arr.reduce((s,a)=>s+num(a.quantity),0);const mv=arr.reduce((s,a)=>s+num(a.marketValue),0);const cost=arr.reduce((s,a)=>s+num(a.avgCost)*num(a.quantity),0);return {grams,mv,cost,avg:grams?cost/grams:null,accounts:arr};}
-function goldSummary(){return summarizeGold(allAccounts().filter(a=>a.kind==='leaf'&&a.measure==='gold_accumulation'));}
-function groupAllocation(items,allocGroups,totalBase){
-  const map=new Map();
-  items.forEach(it=>{const gid=it.groupId||'__none';if(!map.has(gid))map.set(gid,{id:gid,name:gid==='__none'?'未分组':groupName(gid),color:gid==='__none'?'#9aa3ae':groupColor(gid),mv:0,cost:0,items:[]});const g=map.get(gid);g.mv+=it.mv;g.cost+=it.cost;g.items.push(it);});
-  const order={};allocGroups.forEach((g,i)=>order[g.id]=i);
-  const rows=Array.from(map.values()).map(g=>{const pnl=g.mv-g.cost;return {...g,pnl,pnlPct:g.cost?pnl/g.cost*100:null,pct:totalBase?g.mv/totalBase*100:0};});
-  rows.sort((a,b)=>{if(a.id==='__none')return 1;if(b.id==='__none')return -1;return (order[a.id]??99)-(order[b.id]??99);});
-  return rows;
+function catOpts(sel,cats){return `<option value="">未分类</option>`+(cats||[]).map(g=>`<option value="${esc(g.id)}" ${sel===g.id?'selected':''}>${esc(g.name)}</option>`).join('');}
+function cfgLeafRowView(l,cats){
+  return `<div class="cfg-row cfg-leaf"><div class="cfg-name"><span>${esc(l.name)}</span>${l.isEtf?'<span class="tag plat">ETF</span>':''}${l.isFallback?'<span class="tag">兜底</span>':''}${l.isEtf?`<span class="code">${esc(l.code||'')}</span>`:''}</div><div class="cfg-cat">${cfgCategoryChip(l.categoryId,cats)}</div><div class="cfg-amount num">¥${fmtMoney(l.amount)}</div><div class="cfg-actions"></div></div>`;
 }
-function allocationData(){
-  const items=[];
-  allAccounts().forEach(a=>{if(a.kind!=='leaf'||a.isLiability)return;if(a.source==='investment_platform')return;items.push({key:'a:'+a.id,id:a.id,name:a.name,type:'account',pool:a.pool,source:a.source,groupId:a.allocationGroupId||null,mv:leafMV(a),cost:leafCost(a)});});
-  currentHoldings().forEach(h=>{const st=holdingSetting(h.code);items.push({key:'h:'+h.code,id:h.code,name:h.name,type:'holding',pool:'invest',source:'investment_platform',groupId:st.allocationGroupId||null,mv:holdingMV(h),cost:holdingCost(h)});});
-  const base=state.settings.allocationShareBase==='investment_assets'?investmentAssets():totalAssets();
-  const rows=groupAllocation(items,state.allocationGroups,base);
-  return {items,rows,base,overallInvestmentRatio:totalAssets()?investmentAssets()/totalAssets()*100:0};
+function cfgLeafRowEdit(l,cats,isSystem){
+  const nameCell=isSystem?`<span>${esc(l.name)}</span>${l.isEtf?'<span class="tag plat">ETF</span>':''}${l.isFallback?'<span class="tag">兜底</span>':''}${l.isEtf?`<span class="code">${esc(l.code||'')}</span>`:''}`:`<input class="cfg-input" data-cfg-name="${esc(l.id)}" value="${esc(l.name)}" maxlength="20">`;
+  const actions=isSystem?'':`<button class="cfg-icon add" data-cfg-add-sibling="${esc(l.id)}" title="新增同级二级账户">＋</button><button class="cfg-icon del" data-cfg-del-leaf="${esc(l.id)}" title="删除二级账户">－</button>`;
+  return `<div class="cfg-row cfg-leaf"><div class="cfg-name">${nameCell}</div><div class="cfg-cat"><select class="cfg-select" data-cfg-cat="${esc(l.id)}">${catOpts(l.categoryId,cats)}</select></div><div class="cfg-amount"></div><div class="cfg-actions">${actions}</div></div>`;
 }
-function latestSnapshot(){if(!state.snapshots.length)return null;const list=[...state.snapshots].sort((a,b)=>String(a.date).localeCompare(String(b.date)));return list[list.length-1];}
-function snapshotBefore(date){const list=state.snapshots.filter(s=>String(s.date)<String(date)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));return list.length?list[list.length-1]:null;}
+function cfgEtfRowEdit(e,cats){
+  return `<div class="cfg-row cfg-leaf"><div class="cfg-name"><span>${esc(e.name)}</span><span class="tag plat">ETF</span><span class="code">${esc(e.code)}</span></div><div class="cfg-cat"><select class="cfg-select" data-cfg-hcat="${esc(e.holdingCode)}">${catOpts(e.categoryId,cats)}</select></div><div class="cfg-amount"></div><div class="cfg-actions"></div></div>`;
+}
+function cfgGroupHeadView(g,sub){
+  return `<div class="cfg-row cfg-group-row"><div class="cfg-name"><span>${esc(g.name)}</span>${g.id===SYSTEM_GROUP_ID?'<span class="tag plat">系统</span>':''}<span class="grow"></span><span class="faint small num">小计 ¥${fmtMoney(sub)}</span></div><div class="cfg-actions"></div></div>`;
+}
+function cfgGroupHeadEdit(g){
+  const isSystem=g.id===SYSTEM_GROUP_ID;
+  const nameCell=isSystem?`<span>${esc(g.name)}</span><span class="tag plat">系统</span>`:`<input class="cfg-input" data-cfg-gname="${esc(g.id)}" value="${esc(g.name)}" maxlength="20">`;
+  const actions=isSystem?'':`<button class="cfg-icon add" data-cfg-add-child="${esc(g.id)}" title="新增二级账户">＋</button><button class="cfg-icon del" data-cfg-del-group="${esc(g.id)}" title="删除一级账户">－</button>`;
+  return `<div class="cfg-row cfg-group-row"><div class="cfg-name">${nameCell}</div><div class="cfg-actions">${actions}</div></div>`;
+}
+function renderAccountConfig(){
+  if(!state)return;
+  const sx=cfgEditing?cfgDraft:state;
+  const cats=sx.allocationGroups||[];
+  const editing=cfgEditing;
+  const chips=editing?cats.map(g=>`<span class="cat-chip edit" style="border-color:${esc(g.color)}"><span class="dot" style="background:${esc(g.color)}"></span><input data-cat-name="${esc(g.id)}" value="${esc(g.name)}" maxlength="12"><button data-cat-del="${esc(g.id)}" title="删除类别">×</button></span>`).join('')+`<button class="btn small" id="btnCfgAddCat">＋ 新增类别</button>`:(cats.length?cats.map(g=>`<span class="cat-chip"><span class="dot" style="background:${esc(g.color)}"></span>${esc(g.name)}</span>`).join(''):'<span class="faint small">还没有配置类别，点“编辑”新增。</span>');
+  const groupList=sx.accounts.filter(a=>a.kind==='group').sort((a,b)=>num(a.order)-num(b.order)||String(a.name).localeCompare(String(b.name),'zh-CN'));
+  const tree=groupList.map(g=>{
+    let rows='';let sub=0;
+    if(g.id===SYSTEM_GROUP_ID){
+      const etfs=etfItems();
+      if(etfs.length){rows=etfs.map(e=>editing?cfgEtfRowEdit(e,cats):cfgLeafRowView(e,cats)).join('');sub=etfs.reduce((s,e)=>s+num(e.amount),0);}
+      else{
+        const fb=sx.accounts.find(l=>l.kind==='leaf'&&l.id===FALLBACK_LEAF_ID)||allLeaves().find(l=>l.id===FALLBACK_LEAF_ID);
+        if(fb){rows=editing?cfgLeafRowEdit(fb,cats,true):cfgLeafRowView({...fb,isFallback:true},cats);sub=num(fb.amount);}
+        rows+='<div class="cfg-hint">暂无 ETF 持仓，刷新投资数据后自动出现。</div>';
+      }
+    }else{
+      const kids=sx.accounts.filter(l=>l.kind==='leaf'&&l.parentId===g.id&&!l.fallback);
+      rows=kids.map(l=>editing?cfgLeafRowEdit(l,cats,false):cfgLeafRowView(l,cats)).join('')||'<div class="cfg-hint">暂无二级账户</div>';
+      sub=kids.reduce((s,l)=>s+num(l.amount),0);
+    }
+    return `<div class="cfg-group">${editing?cfgGroupHeadEdit(g):cfgGroupHeadView(g,sub)}${rows}</div>`;
+  }).join('');
+  const hasManualGroup=(editing?cfgDraft.accounts:state.accounts).some(a=>a.kind==='group'&&a.id!==SYSTEM_GROUP_ID);
+  const emptyHint=(!hasManualGroup&&!editing)?'<div class="cfg-hint">还没有账户，先新增一级账户，再新增二级账户。点“编辑”开始。</div>':'';
+  $('#view-accounts').innerHTML=`<div class="card"><div class="card-head"><div><h2>账户配置</h2><div class="small muted">主数据维护 · 金额请在期初/盘点填写</div></div><span class="grow"></span>${editing?'<button class="btn" id="btnCfgCancel">取消</button><button class="btn primary" id="btnCfgSave">确定</button>':'<button class="btn" id="btnCfgOpening">'+(openingSnapshot()?'编辑期初':'录入期初')+'</button><button class="btn primary" id="btnCfgEdit">编辑</button>'}</div><div class="cfg-cats"><span class="lbl">配置类别</span>${chips}</div><div class="cfg-tree">${tree}${emptyHint}</div>${editing?'<div class="cfg-add-group"><button class="btn" id="btnCfgAddGroup">＋ 增加一级账户</button></div>':''}</div>`;
+  bindAccountConfigEvents();
+}
+function bindAccountConfigEvents(){
+  const edit=$('#btnCfgEdit');if(edit)edit.onclick=startAccountConfigEdit;
+  const opening=$('#btnCfgOpening');if(opening)opening.onclick=openOpeningModal;
+  const cancel=$('#btnCfgCancel');if(cancel)cancel.onclick=cancelAccountConfigEdit;
+  const save=$('#btnCfgSave');if(save)save.onclick=saveAccountConfigEdit;
+  const addGroup=$('#btnCfgAddGroup');if(addGroup)addGroup.onclick=cfgAddGroup;
+  const addCat=$('#btnCfgAddCat');if(addCat)addCat.onclick=cfgAddCategory;
+  if(!cfgEditing)return;
+  $$('#view-accounts [data-cfg-gname]').forEach(el=>el.oninput=()=>{const g=cfgDraft.accounts.find(x=>x.id===el.dataset.cfgGname);if(g)g.name=el.value;});
+  $$('#view-accounts [data-cfg-name]').forEach(el=>el.oninput=()=>{const a=cfgDraft.accounts.find(x=>x.id===el.dataset.cfgName);if(a)a.name=el.value;});
+  $$('#view-accounts [data-cfg-cat]').forEach(el=>el.onchange=()=>{const a=cfgDraft.accounts.find(x=>x.id===el.dataset.cfgCat);if(a)a.categoryId=el.value||null;});
+  $$('#view-accounts [data-cfg-hcat]').forEach(el=>el.onchange=()=>{const code=el.dataset.cfgHcat;if(!cfgDraft.holdingSettings[code])cfgDraft.holdingSettings[code]={categoryId:null,order:0};cfgDraft.holdingSettings[code].categoryId=el.value||null;});
+  $$('#view-accounts [data-cat-name]').forEach(el=>el.oninput=()=>{const g=cfgDraft.allocationGroups.find(x=>x.id===el.dataset.catName);if(g)g.name=el.value;});
+  $$('#view-accounts [data-cat-del]').forEach(b=>b.onclick=()=>cfgDeleteCategory(b.dataset.catDel));
+  $$('#view-accounts [data-cfg-add-child]').forEach(b=>b.onclick=()=>cfgAddChild(b.dataset.cfgAddChild));
+  $$('#view-accounts [data-cfg-add-sibling]').forEach(b=>b.onclick=()=>cfgAddSibling(b.dataset.cfgAddSibling));
+  $$('#view-accounts [data-cfg-del-group]').forEach(b=>b.onclick=()=>cfgDeleteGroup(b.dataset.cfgDelGroup));
+  $$('#view-accounts [data-cfg-del-leaf]').forEach(b=>b.onclick=()=>cfgDeleteLeaf(b.dataset.cfgDelLeaf));
+}
+function focusCfg(sel){setTimeout(()=>{const el=document.querySelector(sel);if(el){el.focus();if(el.select)el.select();}},0);}
+function startAccountConfigEdit(){
+  if(!state)return;
+  cfgDraft=JSON.parse(JSON.stringify({accounts:state.accounts,allocationGroups:state.allocationGroups,holdingSettings:state.holdingSettings||{}}));
+  cfgEditing=true;renderAccountConfig();
+}
+function cancelAccountConfigEdit(){cfgEditing=false;cfgDraft=null;renderAccountConfig();}
+function cfgAddCategory(){
+  if(!cfgDraft)return;
+  const gs=cfgDraft.allocationGroups;const g={id:uid(),name:uniqueCategoryName(gs),color:nextCategoryColor(gs),order:gs.length+1};
+  gs.push(g);renderAccountConfig();focusCfg('[data-cat-name="'+g.id+'"]');
+}
+function cfgDeleteCategory(id){
+  if(!cfgDraft)return;const g=cfgDraft.allocationGroups.find(x=>x.id===id);if(!g)return;
+  const used=cfgDraft.accounts.filter(a=>a.categoryId===id).length+Object.values(cfgDraft.holdingSettings||{}).filter(s=>s&&s.categoryId===id).length;
+  if(used&&!confirm(`类别“${g.name}”下有 ${used} 项，删除后变为未分类。继续？`))return;
+  cfgDraft.allocationGroups=cfgDraft.allocationGroups.filter(x=>x.id!==id);
+  cfgDraft.accounts.forEach(a=>{if(a.categoryId===id)a.categoryId=null;});
+  Object.values(cfgDraft.holdingSettings||{}).forEach(s=>{if(s&&s.categoryId===id)s.categoryId=null;});
+  renderAccountConfig();
+}
+function cfgAddGroup(){
+  if(!cfgDraft)return;
+  const order=cfgDraft.accounts.filter(a=>a.kind==='group'&&a.id!==SYSTEM_GROUP_ID).reduce((m,g)=>Math.max(m,num(g.order)),0)+1;
+  const g={id:uid(),name:'一级账户',kind:'group',order,system:false};
+  cfgDraft.accounts.push(g);renderAccountConfig();focusCfg('[data-cfg-gname="'+g.id+'"]');
+}
+function cfgAddChild(groupId){
+  if(!cfgDraft)return;
+  const g=cfgDraft.accounts.find(a=>a.id===groupId&&a.kind==='group');
+  if(!g||g.id===SYSTEM_GROUP_ID)return;
+  const order=cfgDraft.accounts.filter(a=>a.parentId===groupId).reduce((m,a)=>Math.max(m,num(a.order)),0)+1;
+  const a={id:uid(),parentId:groupId,name:'二级账户',kind:'leaf',categoryId:null,amount:0,order,system:false,fallback:false};
+  cfgDraft.accounts.push(a);renderAccountConfig();focusCfg('[data-cfg-name="'+a.id+'"]');
+}
+function cfgAddSibling(leafId){
+  if(!cfgDraft)return;
+  const a=cfgDraft.accounts.find(x=>x.id===leafId&&x.kind==='leaf');
+  if(!a||a.fallback||a.parentId===SYSTEM_GROUP_ID)return;
+  cfgAddChild(a.parentId);
+}
+function cfgDeleteGroup(id){
+  if(!cfgDraft)return;const g=cfgDraft.accounts.find(a=>a.id===id&&a.kind==='group');if(!g)return;
+  if(g.id===SYSTEM_GROUP_ID)return;
+  const kids=cfgDraft.accounts.filter(a=>a.kind==='leaf'&&a.parentId===id);
+  if(kids.length)return toast('请先删除或移走该一级账户下的二级账户','err');
+  if(!confirm(`删除一级账户“${g.name}”？`))return;
+  cfgDraft.accounts=cfgDraft.accounts.filter(a=>a.id!==id);renderAccountConfig();
+}
+function cfgDeleteLeaf(id){
+  if(!cfgDraft)return;const a=cfgDraft.accounts.find(x=>x.id===id&&x.kind==='leaf');if(!a)return;
+  if(a.fallback||a.parentId===SYSTEM_GROUP_ID)return;
+  if(!confirm(`删除二级账户“${a.name}”？历史快照会保留，但不再参与当前总资产。`))return;
+  cfgDraft.accounts=cfgDraft.accounts.filter(x=>x.id!==id);renderAccountConfig();
+}
+function cfgValidate(){
+  const errors=[];const warnings=[];if(!cfgDraft)return {errors,warnings};
+  const cats=cfgDraft.allocationGroups||[];const seen=new Set();
+  cats.forEach(g=>{const n=String(g.name||'').trim();if(!n)errors.push('配置类别名称不能为空');else if(seen.has(n))errors.push(`配置类别名称重复：${n}`);else seen.add(n);});
+  const groups=cfgDraft.accounts.filter(a=>a.kind==='group');
+  const leaves=cfgDraft.accounts.filter(a=>a.kind==='leaf'&&!a.fallback&&a.parentId!==SYSTEM_GROUP_ID);
+  const gseen=new Set();
+  groups.forEach(g=>{const n=String(g.name||'').trim();if(!n)errors.push('一级账户名称不能为空');else if(g.id!==SYSTEM_GROUP_ID&&gseen.has(n))warnings.push(`一级账户名称重复：${n}`);else gseen.add(n);if(g.id!==SYSTEM_GROUP_ID&&!cfgDraft.accounts.some(a=>a.kind==='leaf'&&a.parentId===g.id))warnings.push(`一级账户“${n||'未命名'}”没有二级账户`);});
+  const lseen=new Set();
+  leaves.forEach(a=>{const n=String(a.name||'').trim();if(!n)errors.push('二级账户名称不能为空');else{const key=String(a.parentId)+'|'+n;if(lseen.has(key))warnings.push(`同一一级账户下名称重复：${n}`);else lseen.add(key);}if(!a.categoryId||!cats.some(g=>g.id===a.categoryId))warnings.push(`“${n||'未命名'}”未分类`);});
+  currentHoldings().forEach(h=>{const st=cfgDraft.holdingSettings[h.code]||{};if(!st.categoryId||!cats.some(g=>g.id===st.categoryId))warnings.push(`ETF“${h.name}”未分类`);});
+  return {errors,warnings};
+}
+function showCfgIssues(errors,warnings,allowSave){
+  const list=[...errors.map(t=>({t,type:'err'})),...warnings.map(t=>({t,type:'warn'}))];
+  const body=`<div class="modal-head"><h3>${errors.length?'账户配置还有问题':'账户配置检查'}</h3></div><div class="small muted">${errors.length?'请先修正以下问题：':'以下项目未完成，可以继续保存：'}</div><div class="table-wrap" style="margin-top:10px"><table><tbody>${list.slice(0,20).map(x=>`<tr><td class="${x.type==='err'?'down':'muted'}">${x.type==='err'?'错误':'提示'}</td><td>${esc(x.t)}</td></tr>`).join('')}</tbody></table></div>${list.length>20?`<div class="faint small" style="margin-top:6px">另 ${list.length-20} 项…</div>`:''}<div class="form-actions"><button class="btn" data-close>返回修改</button>${allowSave?'<button class="btn primary" id="btnCfgForceSave">仍然保存</button>':''}</div>`;
+  const ov=openModal(body);
+  if(allowSave){const b=ov.querySelector('#btnCfgForceSave');if(b)b.onclick=()=>{closeModal();commitAccountConfigEdit();};}
+}
+function commitAccountConfigEdit(){
+  if(!cfgDraft)return;
+  state.accounts=cfgDraft.accounts;state.allocationGroups=cfgDraft.allocationGroups;state.holdingSettings=cfgDraft.holdingSettings;
+  state=normalizeV2(state);
+  cfgEditing=false;cfgDraft=null;
+  if(draft)rebuildDraftItems(true);
+  saveState({backup:true,label:'account_config'});renderAll();toast('账户配置已保存','ok');
+}
+function saveAccountConfigEdit(){
+  if(!cfgDraft)return;
+  const {errors,warnings}=cfgValidate();
+  if(errors.length)return showCfgIssues(errors,[],false);
+  if(warnings.length)return showCfgIssues([],warnings,true);
+  commitAccountConfigEdit();
+}
+
+function openSnapshotDetail(id){
+  const s=state.snapshots.find(x=>x.id===id);if(!s)return;
+  const rows=(s.items||[]).map(it=>`<tr><td>${esc(it.groupName||'')} / ${esc(it.name)}</td><td class="n">¥${fmtMoney(it.before)}</td><td class="n">${fmtSigned(it.netFlow)}</td><td class="n">¥${fmtMoney(it.expected)}</td><td class="n">¥${fmtMoney(it.actual)}</td><td class="n ${clsNum(it.diff)}">${fmtSigned(it.diff)}</td><td>${esc(it.explanation?explainLabel(it.explanation):'—')}</td></tr>`).join('');
+  openModal(`<div class="modal-head"><h3>${esc(s.date)} · ${s.type==='opening'?'期初':'盘点'}</h3></div><div class="summary-strip five"><div class="box"><div class="lbl">总资产</div><div class="val num">¥${fmtMoney(s.totalAssets)}</div></div><div class="box"><div class="lbl">消费</div><div class="val num">¥${fmtMoney(s.consumption)}</div></div><div class="box"><div class="lbl">浮盈浮亏</div><div class="val num ${clsNum(s.floatingPnl)}">${fmtSigned(s.floatingPnl)}</div></div><div class="box"><div class="lbl">其他</div><div class="val num ${clsNum(s.other)}">${fmtSigned(s.other)}</div></div><div class="box"><div class="lbl">未解释</div><div class="val num ${clsNum(s.unexplained)}">${fmtSigned(s.unexplained)}</div></div></div><div class="table-wrap"><table><thead><tr><th>账户</th><th class="n">上次余额</th><th class="n">期间净流入</th><th class="n">应有余额</th><th class="n">本次实际</th><th class="n">差额</th><th>解释</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="empty">暂无明细</td></tr>'}</tbody></table></div><div class="form-actions"><button class="btn primary" data-close>关闭</button></div>`,{wide:true});
+}
+function renderSettings(){
+  if(!state)return;
+  const backups=listBackups();
+  const snaps=[...state.snapshots].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const imports=[...state.imports].reverse();
+  const syncText=syncMeta.dirty?'有改动待同步':(currentUser?'已同步到云端':'未登录');
+  const lastSync=syncMeta.lastSyncAt?` · 最近同步 ${syncMeta.lastSyncAt.slice(0,19).replace('T',' ')}`:'';
+  let hasLegacy=false;try{hasLegacy=!!localStorage.getItem(LEGACY_KEY);}catch(e){}
+  $('#view-settings').innerHTML=`
+  <div class="card"><div class="card-head"><h2>数据安全</h2><span class="grow"></span>${hasLegacy?'<button class="btn small" id="btnExportLegacySettings">导出旧数据 JSON</button>':''}<button class="btn small" id="btnExport">导出 JSON</button><button class="btn small" id="btnImportFile">导入 JSON</button><button class="btn small danger" id="btnResetAll">清空数据</button></div><div class="filters"><button class="btn small" id="btnBackupNow">立即备份</button><span class="faint small">自动保留最近 8 份本机备份；退出登录会清除本机缓存与备份。</span></div><div class="table-wrap"><table><thead><tr><th>时间</th><th>标签</th><th>大小</th><th></th></tr></thead><tbody>${backups.length?backups.map(b=>`<tr><td>${esc(b.time)}</td><td>${esc(b.label)}</td><td>${fmtInt(b.size)} B</td><td><button class="icon-btn" data-restore="${esc(b.key)}">恢复</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">暂无备份</td></tr>'}</tbody></table></div><div class="note">云端同步：${esc(syncText)}${esc(lastSync)}。本机只保留当前会话缓存。</div></div>
+  <div class="grid settings-grid">
+    <div class="card"><div class="card-head"><h2>盘点历史</h2><span class="grow"></span><button class="btn small" id="btnOpeningFromSettings">${openingSnapshot()?'编辑期初':'录入期初'}</button></div><div class="table-wrap"><table><thead><tr><th>日期</th><th>类型</th><th class="n">总资产</th><th class="n">消费</th><th class="n">未解释</th><th></th></tr></thead><tbody>${snaps.length?snaps.map(s=>`<tr><td>${esc(s.date)}</td><td>${s.type==='opening'?'期初':'盘点'}</td><td class="n">¥${fmtMoney(s.totalAssets)}</td><td class="n">¥${fmtMoney(s.consumption)}</td><td class="n ${clsNum(s.unexplained)}">${fmtSigned(s.unexplained)}</td><td><button class="icon-btn" data-snap="${esc(s.id)}">查看</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">暂无盘点</td></tr>'}</tbody></table></div></div>
+    <div class="card"><div class="card-head"><h2>持仓刷新历史</h2><span class="grow"></span><button class="btn small" id="btnRefreshFromSettings">刷新投资数据</button></div><div class="table-wrap"><table><thead><tr><th>时间</th><th>方式</th><th>状态</th><th class="n">持仓数</th><th class="n">市值</th><th>数据日期</th></tr></thead><tbody>${imports.length?imports.slice(0,10).map(i=>`<tr><td>${esc((i.importedAt||'').slice(0,19).replace('T',' '))}</td><td>${i.mode==='auto'?'自动刷新':i.mode==='manual'?'手动刷新':'导入'}</td><td class="up">成功</td><td class="n">${i.holdings.length}</td><td class="n">¥${fmtMoney(i.holdings.reduce((s,h)=>s+holdingMV(h),0))}</td><td>${esc((i.holdings.map(h=>h.lastUpdate).filter(Boolean).sort().pop())||'—')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">暂无记录</td></tr>'}</tbody></table></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h2>关于</h2><span class="grow"></span><button class="btn small" id="btnSelfTest">运行自检</button></div><div class="small muted">多多 ${BUILD} · 部署地址 https://alice8332-max.github.io/duoduo/ · 登录后数据保存在 Supabase 云端。导出 JSON 可完整备份。</div></div>`;
+  $('#btnExport').onclick=exportJSON;
+  $('#btnImportFile').onclick=importJSONFile;
+  $('#btnResetAll').onclick=resetAll;
+  $('#btnBackupNow').onclick=()=>{backupState('manual');renderSettings();toast('已备份','ok');};
+  $('#btnSelfTest').onclick=runSelfTest;
+  const el=$('#btnExportLegacySettings');if(el)el.onclick=exportLegacyJSON;
+  const op=$('#btnOpeningFromSettings');if(op)op.onclick=openOpeningModal;
+  const rf=$('#btnRefreshFromSettings');if(rf)rf.onclick=()=>refreshPlatformHoldings({mode:'manual'});
+  $$('#view-settings [data-restore]').forEach(b=>b.onclick=()=>{if(confirm('恢复该备份？当前数据会先自动备份。'))restoreBackup(b.dataset.restore);});
+  $$('#view-settings [data-snap]').forEach(b=>b.onclick=()=>openSnapshotDetail(b.dataset.snap));
+}
+
+function toast(msg,type){const el=document.createElement('div');el.className='toast '+(type||'');el.textContent=msg;$('#toastRoot').appendChild(el);setTimeout(()=>el.remove(),2800);}
+function openModal(html,opts){
+  closeModal();
+  const back=document.createElement('div');back.className='modal-back';
+  back.innerHTML=`<div class="modal${opts&&opts.wide?' wide':''}">${html}</div>`;
+  back.onclick=e=>{if(e.target===back)closeModal();};
+  $('#modalRoot').appendChild(back);
+  back.querySelectorAll('[data-close]').forEach(el=>{el.onclick=closeModal;});
+  return back;
+}
+function closeModal(){if(modalCleanup){try{modalCleanup();}catch(e){}modalCleanup=null;}$('#modalRoot').innerHTML='';}
+
 function platformCacheInfo(){
-  const raw=localStorage.getItem(PLATFORM_KEY);
+  let raw=null;try{raw=localStorage.getItem(PLATFORM_KEY);}catch(e){return {ok:false,code:'missing',holdings:[],count:0,newest:'',stale:true};}
   if(!raw)return {ok:false,code:'missing',holdings:[],count:0,newest:'',stale:true};
   let data=null;try{data=JSON.parse(raw);}catch(e){return {ok:false,code:'parse',holdings:[],count:0,newest:'',stale:true};}
   const source=Array.isArray(data&&data.holdings)?data.holdings:[];
@@ -644,28 +1337,23 @@ function showPlatformNotice(kind,date){
   el.classList.remove('hidden');
 }
 function hidePlatformNotice(){const el=$('#platformNotice');if(el)el.classList.add('hidden');}
-function ensurePlatformGroup(){
-  if(groups().some(g=>g.holdingsSource==='investment_platform'))return;
-  state.accounts.push({id:uid(),parentId:null,name:'证券账户',kind:'group',pool:'invest',holdingsSource:'investment_platform',order:99,archived:false,tags:[],meta:{}});
-}
 function upsertPlatformImport(info,mode){
   const holdings=[...new Map((info.holdings||[]).map(h=>[h.code,h])).values()];
   if(!holdings.length)return {ok:false,code:'empty'};
   const fp=holdingsFingerprint(holdings);
   const last=state.imports.length?state.imports[state.imports.length-1]:null;
   let rec=null;let changed=true;
-  if(last&&String(last.importedAt||'').slice(0,10)===today()&&last.source==='invPlatformData_v1'){
-    if(holdingsFingerprint(last.holdings||[])===fp){changed=false;rec=last;rec.mode=mode;}
-    else{last.holdings=holdings;last.importedAt=nowISO();last.mode=mode;rec=last;}
+  if(last&&String(last.importedAt||'').slice(0,10)===today()&&last.source==='invPlatformData_v1'&&holdingsFingerprint(last.holdings||[])===fp){
+    changed=false;rec=last;rec.mode=mode;
   }else{
     rec={id:uid(),importedAt:nowISO(),source:'invPlatformData_v1',mode,holdings};
     state.imports.push(rec);
   }
-  ensurePlatformGroup();
-  holdings.forEach(h=>{if(!state.holdingSettings[h.code])state.holdingSettings[h.code]={allocationGroupId:null};});
+  holdings.forEach(h=>{if(!state.holdingSettings[h.code])state.holdingSettings[h.code]={categoryId:null,order:num(h.order)||0};});
   return {ok:true,record:rec,changed};
 }
-function refreshPlatformHoldings(opts={}){
+function refreshPlatformHoldings(opts){
+  opts=opts||{};
   if(!state)return {ok:false,code:'nostate'};
   const mode=opts.mode||'manual';const silent=!!opts.silent;
   const info=platformCacheInfo();
@@ -681,602 +1369,110 @@ function refreshPlatformHoldings(opts={}){
   }
   const res=upsertPlatformImport(info,mode);
   if(!res.ok)return res;
-  if(draft)refreshDraftPlatformItems();
+  if(draft)rebuildDraftItems(true);
   saveState({backup:mode==='manual',label:'platform_refresh'});
   renderAll();
   if(info.stale)showPlatformNotice('stale',info.newest);else hidePlatformNotice();
   if(!silent)toast(`已刷新 ${info.count} 项 · 行情 ${info.newest||'未知'}${info.stale?'（不是今天）':''}`,info.stale?'':'ok');
   return {ok:true,info,changed:res.changed};
 }
-function refreshAndReconcile(){
-  const res=refreshPlatformHoldings({mode:'manual'});
-  if(!res||!res.ok)return;
-  draft=null;startReconcile(false);switchView('reconcile');
-}
-function maybeAutoRefreshPlatform(){
-  if(!state||!sessionReady)return;
-  if(!state.snapshots.length)return;
-  if(state.snapshots.some(s=>String(s.date)===today()))return;
-  const info=platformCacheInfo();
-  if(!info.ok){showPlatformNotice(info.code);return;}
-  if(!info.holdings.length){showPlatformNotice('empty');return;}
-  if(info.stale){showPlatformNotice('stale',info.newest);return;}
-  const res=refreshPlatformHoldings({mode:'auto',silent:true});
-  if(!res.ok)return;
-  draft=null;startReconcile(false);switchView('reconcile');
-  toast(`已自动刷新 ${info.count} 项 · 行情 ${info.newest}`,'ok');
-}
-function afterStateReady(){maybeAutoRefreshPlatform();}
-function monthMetrics(){const mk=monthKey(today());let consumption=0,investmentPnl=0,count=0;state.snapshots.forEach(s=>{if(String(s.date).slice(0,7)===mk&&s.reconcile){consumption+=num(s.reconcile.consumption);investmentPnl+=num(s.reconcile.investmentPnl);count++;}});return {consumption,investmentPnl,count};}
-function flowsInMonth(){const mk=monthKey(today());return state.flows.filter(f=>String(f.date).slice(0,7)===mk);}
-function monthExternalOut(){return flowsInMonth().filter(f=>f.type==='external_out').reduce((s,f)=>s+num(f.amount),0);}
-function consumptionTrend(months=6){const res=[];const now=new Date();for(let i=months-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const mk=d.toISOString().slice(0,7);let v=0;state.snapshots.forEach(s=>{if(String(s.date).slice(0,7)===mk&&s.reconcile)v+=num(s.reconcile.consumption);});res.push({month:mk,label:(d.getMonth()+1)+'月',value:v});}return res;}
-function averageConsumption(){const months=clamp(num(state.settings.averageWindowMonths)||6,1,12);const trend=consumptionTrend(months).map(x=>x.value);const active=trend.filter(v=>v>0);if(!active.length)return null;return active.reduce((s,v)=>s+v,0)/active.length;}
-function runway(){const avg=averageConsumption();if(!avg||avg<=0)return null;return liquidNet()/avg;}
-function nextDueDate(day){const d=Number(day)||1;const now=new Date(today()+'T00:00:00');let y=now.getFullYear(),m=now.getMonth();let due=new Date(y,m,Math.min(d,daysInMonth(y,m)));if(due<now){m++;if(m>11){m=0;y++;}due=new Date(y,m,Math.min(d,daysInMonth(y,m)));}return due;}
-function reminders(){const res=[];const now=new Date(today()+'T00:00:00');allAccounts().forEach(a=>{if(a.kind!=='leaf')return;if(a.source==='fixed'&&a.meta&&a.meta.endDate){const dt=parseDate(a.meta.endDate);if(dt){const days=Math.round((dt-now)/86400000);if(days>=-1&&days<=30)res.push({type:'fixed',days,text:`${a.name} 将于 ${a.meta.endDate} 到期${num(a.meta.principal)?'，本金 ¥'+fmtMoney(a.meta.principal):''}`});}}if(a.isLiability&&a.meta&&a.meta.dueDay){const due=nextDueDate(a.meta.dueDay);const days=Math.round((due-now)/86400000);res.push({type:'credit',days,text:`${a.name} 还款日 ${due.toISOString().slice(0,10)}，当前欠款 ¥${fmtMoney(Math.abs(leafMV(a)))}`});}});return res.sort((a,b)=>a.days-b.days);}
-function netFlowsForAccount(accountId,fromDate,toDate){let sum=0;state.flows.forEach(f=>{if(f.status==='applied'&&fromDate)return;if(fromDate&&String(f.date)<=String(fromDate))return;if(String(f.date)>String(toDate))return;const amt=num(f.amount);if(f.type==='external_in'&&f.toAccountId===accountId)sum+=amt;if(f.type==='external_out'&&f.fromAccountId===accountId)sum-=amt;if(f.type==='transfer'){if(f.toAccountId===accountId)sum+=amt;if(f.fromAccountId===accountId)sum-=amt;}});return sum;}
-function flowsInPeriod(fromDate,toDate){return state.flows.filter(f=>{if(fromDate&&String(f.date)<=String(fromDate))return false;return String(f.date)<=String(toDate);});}
 
-
-function renderAll(){renderDashboard();if(activeView==='reconcile')renderReconcile();if(activeView==='accounts')renderAccountConfig();if(activeView==='settings')renderSettings();$('#asOfInfo').textContent=`云端同步 · 数据更新 ${state.settings.lastReconcileDate||'尚未盘点'}`;}
-function switchView(v){
-  if(v==='allocation')v='accounts';
-  if(cfgEditing&&v!=='accounts'){if(!confirm('放弃未保存的账户配置修改？'))return;cfgEditing=false;cfgDraft=null;}
-  activeView=v;$$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));$$('.view').forEach(x=>x.classList.remove('active'));$('#view-'+v).classList.add('active');if(v==='reconcile'&&!draft)startReconcile(false);renderAll();
+function renderLegacyBanner(){
+  const el=$('#legacyBanner');if(!el)return;
+  let has=false,dismissed=false;
+  try{has=!!localStorage.getItem(LEGACY_KEY);dismissed=localStorage.getItem(LEGACY_BANNER_KEY)==='1';}catch(e){}
+  if(!has||dismissed){el.innerHTML='';el.classList.add('hidden');return;}
+  el.classList.remove('hidden');
+  el.innerHTML=`<div class="platform-notice" style="margin-top:12px"><span>旧数据已导出到 Markdown，新版本从空白开始；首次保存会覆盖云端旧数据。</span><span class="grow"></span><button class="btn small" id="btnExportLegacy">导出旧数据 JSON</button><button class="btn small ghost" id="btnDismissLegacy">知道了</button></div>`;
+  const ex=$('#btnExportLegacy');if(ex)ex.onclick=exportLegacyJSON;
+  const ds=$('#btnDismissLegacy');if(ds)ds.onclick=()=>{localStorage.setItem(LEGACY_BANNER_KEY,'1');renderLegacyBanner();};
 }
-function renderDashboard(){
-  const alloc=allocationData();const gold=goldSummary();const mm=monthMetrics();const extOut=monthExternalOut();const budget=num(state.settings.budget);const avg=averageConsumption();const runwayVal=runway();const trend=consumptionTrend(6);const maxTrend=Math.max(1,...trend.map(x=>x.value));const rem=reminders();
-  const snap=latestSnapshot();const before=snapshotBefore(today());
-  const delta=snap&&before?snap.netWorth-before.netWorth:null;
-  const invPnl=investmentAssets()-investmentCost();
-  const openingSnap=state.snapshots.find(s=>s.opening)||null;
-  const todayDone=state.snapshots.some(s=>String(s.date)===today());
-  const guideHtml=!state.snapshots.length?`<div class="card" style="margin-bottom:14px;border-color:rgba(47,111,237,.28);background:linear-gradient(90deg,rgba(47,111,237,.06),#fff)"><div class="card-head"><h2>还没有期初数据</h2><span class="grow"></span><button class="btn small primary" id="btnOpeningGuide">录入期初</button></div><div class="small muted">1. 建好全部账户　2. 录入 10/31 的资产　3. 刷新今天的数据并盘点。</div></div>`:(openingSnap&&!todayDone?`<div class="card" style="margin-bottom:14px"><div class="card-head"><h2>期初：${esc(openingSnap.date)}</h2><span class="grow"></span><button class="btn small" id="btnOpeningGuide">编辑期初</button><button class="btn small primary" id="btnRefreshGuide">刷新今天数据并盘点</button></div><div class="small muted">下一步：确认投资平台已刷新今天行情，然后刷新数据并开始盘点。</div></div>`:'');
-  const wf=[{label:'期初净值',val:before?before.netWorth:null,type:'base'},{label:'外部流入',val:before?flowsInPeriod(before.date,today()).filter(f=>f.type==='external_in').reduce((s,f)=>s+num(f.amount),0):null,type:'pos'},{label:'外部流出',val:before?flowsInPeriod(before.date,today()).filter(f=>f.type==='external_out').reduce((s,f)=>s+num(f.amount),0):null,type:'neg'},{label:'未解释',val:snap?num(snap.reconcile?.unexplained):null,type:'neg'},{label:'期末净值',val:netWorth(),type:'base'}];
-  const maxWf=Math.max(1,...wf.map(x=>Math.abs(num(x.val))));
-  const segs=alloc.rows.filter(r=>r.mv>0).map(r=>`<div class="alloc-seg" style="flex:${r.pct};background:${r.color}" title="${esc(r.name)} ${fmtPct(r.pct)}"></div>`).join('');
-  const rows=alloc.rows.map(r=>{const pnl=r.pnl,pct=r.pnlPct==null?'--':`${pnl>=0?'+':''}${fmtPct(r.pnlPct)}`;return `<div class="alloc-row"><span class="dot" style="background:${r.color}"></span><span class="nm">${esc(r.name)}</span><span class="num ${clsNum(pnl)}">${pnl>=0?'+':''}${fmtMoney(pnl)}<span class="faint small"> (${pct})</span></span><span class="pct num">${fmtPct(r.pct)}</span></div>`;}).join('');
-  const allocPnl=alloc.items.reduce((s,x)=>s+x.mv-x.cost,0),allocCost=alloc.items.reduce((s,x)=>s+x.cost,0);
-  const trendBars=trend.map(t=>`<div class="trend-col"><div class="trend-bar" style="height:${Math.max(3,t.value/maxTrend*62)}px" title="${t.month} ¥${fmtMoney(t.value)}"></div><div class="trend-lbl">${t.label}</div></div>`).join('');
-  const wfRows=wf.map(x=>{const v=num(x.val);const width=x.val==null?0:Math.abs(v)/maxWf*100;const cls=x.type==='neg'?'neg':x.type==='pos'?'pos':'';return `<div class="wf-row"><span class="muted">${esc(x.label)}</span><div class="wf-track"><div class="wf-fill ${cls}" style="width:${width}%"></div></div><span class="wf-val ${x.type==='neg'?'down':x.type==='pos'?'up':''}">${x.val==null?'--':(x.type==='neg'?'-':'')+fmtMoney(Math.abs(v))}</span></div>`;}).join('');
-  $('#view-dashboard').innerHTML=`
-  ${guideHtml}
-  <div class="grid metrics">
-    <div class="metric"><div class="lbl">总资产</div><div class="val num">¥${fmtMoney(totalAssets())}</div><div class="sub">含投资资产与现金</div></div>
-    <div class="metric"><div class="lbl">净资产</div><div class="val num">¥${fmtMoney(netWorth())}</div><div class="sub ${delta==null?'':clsNum(delta)}">${delta==null?'暂无基线':(delta>=0?'较上次盘点 +':'较上次盘点 ')+fmtMoney(delta)}</div></div>
-    <div class="metric"><div class="lbl">总负债</div><div class="val num ${totalLiabilities()?'down':''}">¥${fmtMoney(totalLiabilities())}</div><div class="sub">信用卡等待还</div></div>
-    <div class="metric"><div class="lbl">投资资产</div><div class="val num">¥${fmtMoney(investmentAssets())}</div><div class="sub">占总资产 ${fmtPct(alloc.overallInvestmentRatio)}</div></div>
-    <div class="metric"><div class="lbl">投资盈亏</div><div class="val num ${clsNum(invPnl)}">${invPnl>=0?'+':''}¥${fmtMoney(invPnl)}</div><div class="sub">成本 ¥${fmtMoney(investmentCost())}</div></div>
-  </div>
-  <div class="grid dash-top">
-    <div class="card">
-      <div class="card-head"><h2>资产配置</h2><span class="faint small">份额口径：${state.settings.allocationShareBase==='investment_assets'?'投资资产':'总资产'}</span><span class="grow"></span><button class="btn small" data-go="accounts">账户配置</button></div>
-      <div class="alloc-stack">${segs||'<div class="alloc-seg" style="flex:1;background:#eef0f4"></div>'}</div>
-      <div class="alloc-list">${rows||'<div class="empty">暂无资产条目</div>'}</div>
-      <div class="alloc-pnl"><span>投资成本 <b class="num">¥${fmtMoney(allocCost)}</b></span><span>投资盈亏 <b class="num ${clsNum(allocPnl)}">${allocPnl>=0?'+':''}¥${fmtMoney(allocPnl)}</b></span><span>整体投资比例 <b class="num">${fmtPct(alloc.overallInvestmentRatio)}</b></span></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><h2>本月消耗</h2><span class="faint small">${monthKey(today())}</span><span class="grow"></span><button class="btn small" data-go="reconcile">去盘点</button></div>
-      <div class="consumption">
-        <div class="cons-main"><div class="big num">¥${fmtMoney(mm.consumption)}</div><div class="line">${budget>0?`预算 ¥${fmtMoney(budget)} · 剩余 <b class="${budget-mm.consumption>=0?'':'down'}">¥${fmtMoney(budget-mm.consumption)}</b>`:'未设置月预算'}${extOut>0?` · 外部流出 ¥${fmtMoney(extOut)}`:''}</div><div class="line">已盘点 ${mm.count} 次 · 平均消耗 ${avg==null?'暂无可比数据':'¥'+fmtMoney(avg)}</div></div>
-        <div class="cons-side"><div>可用天数 <b class="num">${runwayVal==null?'--':Math.floor(runwayVal)+' 天'}</b></div><div>流动净资产 <b class="num">¥${fmtMoney(liquidNet())}</b></div><div>投资盈亏 <b class="num ${clsNum(mm.investmentPnl)}">${mm.investmentPnl>=0?'+':''}¥${fmtMoney(mm.investmentPnl)}</b></div></div>
-        <div><div class="trend-bars">${trendBars}</div><div class="legend"><span>近 6 个月盘点消耗</span></div></div>
-      </div>
-    </div>
-  </div>
-  <div class="grid dash-mid">
-    <div class="card">
-      <div class="card-head"><h2>净值变化</h2><span class="faint small">最近一次盘点至今天</span><span class="grow"></span><button class="btn small" id="btnAddFlow">记录外部资金</button></div>
-      <div class="waterfall">${wfRows}</div>
-      <div class="legend"><span><span class="dot" style="background:var(--accent)"></span>期初/期末</span><span><span class="dot" style="background:var(--up)"></span>外部流入</span><span><span class="dot" style="background:var(--down)"></span>外部流出/未解释</span></div>
-      ${snap?`<div class="note">上次盘点差额 ¥${fmtMoney(snap.delta)}，其中未解释 ¥${fmtMoney(snap.reconcile?.unexplained)}。${Math.abs(num(snap.reconcile?.unexplained))>1?'建议检查账户流水。':'差额已解释。'}</div>`:'<div class="note">完成首次盘点后，这里会显示净值变化归因。</div>'}
-    </div>
-  </div>
-  <div class="gold-row">
-    <div class="title">黄金定投</div>
-    <div class="gold-stat"><b class="num">${fmtGrams(gold.grams)}</b><span>总克数</span></div>
-    <div class="gold-stat"><b class="num">¥${fmtMoney(gold.mv)}</b><span>市值</span></div>
-    <div class="gold-stat"><b class="num">${gold.avg==null?'--':'¥'+fmtMoney(gold.avg)}</b><span>平均成本/克</span></div>
-    <div class="gold-stat"><b class="num ${clsNum(gold.mv-gold.cost)}">${gold.mv-gold.cost>=0?'+':''}¥${fmtMoney(gold.mv-gold.cost)}</b><span>浮动盈亏</span></div>
-    <div class="grow"></div>
-    <div class="muted small">${gold.accounts.length} 个积存金账户 · 黄金 ETF 不计入克数</div>
-  </div>
-  <div class="card" style="margin-top:14px">
-    <div class="card-head"><h2>提醒</h2><span class="grow"></span><span class="faint small">定存到期 / 信用卡还款</span></div>
-    <div class="reminders">${rem.length?rem.map(r=>`<div class="reminder"><span class="ico"></span><span>${esc(r.text)}</span></div>`).join(''):'<div class="empty">暂无近期提醒</div>'}</div>
-  </div>`;
-  $$('#view-dashboard [data-go]').forEach(b=>b.onclick=()=>switchView(b.dataset.go));
-  $('#btnAddFlow').onclick=()=>openFlowModal();
-  const og=$('#btnOpeningGuide');if(og)og.onclick=()=>openOpeningModal();
-  const rg=$('#btnRefreshGuide');if(rg)rg.onclick=()=>refreshAndReconcile();
+function exportLegacyJSON(){
+  const b=legacyBackup();if(!b||!b.data)return toast('没有旧数据备份','err');
+  const payload={app:'多多',kind:'legacy',build:BUILD,exportedAt:nowISO(),source:b.source,savedAt:b.savedAt,data:b.data};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`多多-旧数据-${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出旧数据 JSON','ok');
 }
-function prevSnapshotEntry(snap,opts={}){
-  if(!snap||!Array.isArray(snap.accounts))return null;
-  if(opts.holdingCode)return snap.accounts.find(x=>x&&x.holdingCode===opts.holdingCode)||null;
-  if(opts.accountId)return snap.accounts.find(x=>x&&x.accountId===opts.accountId&&!x.holdingCode)||null;
-  return null;
-}
-function buildAccountReconItems(prevSnap,fromDate,date){
-  const items=[];
-  allAccounts().forEach(a=>{
-    if(a.kind!=='leaf'||a.source==='investment_platform')return;
-    const prev=prevSnapshotEntry(prevSnap,{accountId:a.id});
-    const isLiab=!!a.isLiability;const raw=leafMV(a);const curMv=isLiab?Math.abs(raw):raw;
-    const isGold=a.measure==='gold_accumulation';const isFixed=accountTypeOf(a)==='fixed';
-    let estimateMV=null;
-    if(isFixed){ensureFixedMeta(a);const m=a.meta;const p=num(m.principal);const s=parseDate(m.startDate||'');const e=parseDate(m.endDate||'');const d=parseDate(date);if(p>0&&s&&e&&d){const term=Math.max(1,Math.round((e-s)/86400000));const passed=clamp(Math.round((d-s)/86400000),0,term);estimateMV=p+p*num(m.rate)/100*passed/365;}}
-    const beforeMv=prev?Math.abs(num(prev.actualMV)):(prevSnap?0:curMv);
-    const beforeGrams=isGold?(prev?num(prev.actualGrams):(prevSnap?0:num(a.quantity))):0;
-    const pricePerGram=isGold&&beforeGrams?beforeMv/beforeGrams:null;
-    const netFlow=netFlowsForAccount(a.id,fromDate,date);
-    items.push({accountId:a.id,name:a.name,pool:a.pool,isLiability:isLiab,isGold,isFixed,estimateMV,measure:a.measure,source:a.source,groupId:a.allocationGroupId||null,beforeMV:beforeMv,beforeGrams,pricePerGram,netFlow,expectedMV:beforeMv+netFlow,expectedGrams:beforeGrams,actualMV:curMv,actualGrams:isGold?num(a.quantity):0,check:null,note:''});
-  });
-  return items;
-}
-function buildHoldingReconItems(prevSnap,fromDate,date){
-  const items=[];const cur=currentHoldings();const curMap=new Map(cur.map(h=>[String(h.code),h]));
-  const prevRows=prevSnap&&Array.isArray(prevSnap.accounts)?prevSnap.accounts.filter(x=>x&&x.holdingCode):[];
-  const prevMap=new Map(prevRows.map(x=>[String(x.holdingCode),x]));
-  const codes=[...new Set([...curMap.keys(),...prevMap.keys()])];
-  codes.forEach(code=>{
-    const h=curMap.get(code)||null;const p=prevMap.get(code)||null;
-    const isNew=!!h&&!!prevSnap&&!p;const isSold=!!p&&!h;
-    const st=holdingSetting(code);
-    const beforeMV=p?num(p.actualMV):(prevSnap?0:(h?holdingMV(h):0));
-    const actualMV=h?holdingMV(h):0;
-    const netFlow=netFlowsForAccount('h:'+code,fromDate,date);
-    items.push({accountId:'h:'+code,holdingCode:code,name:(h&&h.name)||(p&&p.name)||code,pool:'invest',isLiability:false,isGold:false,measure:'amount',source:'investment_platform',groupId:st.allocationGroupId||(p&&p.groupId)||null,beforeMV,beforeGrams:0,netFlow,expectedMV:beforeMV+netFlow,expectedGrams:0,actualMV,actualGrams:0,check:null,note:'',isNew,isSold});
-  });
-  items.sort((a,b)=>String(a.name).localeCompare(String(b.name),'zh-CN'));
-  return items;
-}
-function buildReconItems(prevSnap,fromDate,date){return [...buildAccountReconItems(prevSnap,fromDate,date),...buildHoldingReconItems(prevSnap,fromDate,date)];}
-function refreshDraftPlatformItems(){
-  if(!draft)return;
-  const prevSnap=snapshotBefore(draft.date);
-  const manual=draft.items.filter(it=>it.source!=='investment_platform');
-  draft.items=[...manual,...buildHoldingReconItems(prevSnap,draft.fromDate,draft.date)];
-  if(activeView==='reconcile')renderReconcile();
-}
-function startReconcile(render=true){
-  const date=today();const prevSnap=snapshotBefore(date);const fromDate=prevSnap?prevSnap.date:null;
-  draft={date,fromDate,items:buildReconItems(prevSnap,fromDate,date),notes:''};
-  if(render)renderReconcile();
-}
-function reconTotals(){if(!draft)return {};const before=draft.items.filter(i=>!i.isLiability).reduce((s,i)=>s+i.beforeMV,0);const actual=draft.items.filter(i=>!i.isLiability).reduce((s,i)=>s+i.actualMV,0);const expected=draft.items.filter(i=>!i.isLiability).reduce((s,i)=>s+i.expectedMV,0);const unexplained=draft.items.filter(i=>!i.isLiability).reduce((s,i)=>s+(i.actualMV-i.expectedMV),0);const goldBefore=draft.items.filter(i=>i.isGold).reduce((s,i)=>s+i.beforeGrams,0);const goldActual=draft.items.filter(i=>i.isGold).reduce((s,i)=>s+i.actualGrams,0);return {before,actual,expected,unexplained,delta:actual-before,goldBefore,goldActual};}
-function renderReconcile(){
-  if(!draft)startReconcile(false);
-  const cache=platformCacheInfo();
-  const t=reconTotals();const groupsMap=new Map();draft.items.forEach(it=>{const key=it.groupId||'__none';if(!groupsMap.has(key))groupsMap.set(key,[]);groupsMap.get(key).push(it);});
-  const order=state.allocationGroups.map(g=>g.id);const keys=[...groupsMap.keys()].sort((a,b)=>{if(a==='__none')return 1;if(b==='__none')return -1;return order.indexOf(a)-order.indexOf(b);});
-  const rowsHtml=keys.map(gid=>{const items=groupsMap.get(gid);return `<tr style="background:#f8fafc"><td colspan="7" style="font-weight:650">${esc(gid==='__none'?'未分组':groupName(gid))}<span class="tag">${items.length} 项</span></td></tr>`+items.map(it=>{const diff=it.actualMV-it.expectedMV;const srcTag=it.source==='investment_platform'?'<span class="tag plat">投资平台</span>':it.source==='fixed'?'<span class="tag">定存</span>':'';const stateTag=it.isNew?'<span class="tag new">新增</span>':it.isSold?'<span class="tag sold">已卖出</span>':'';const fixedTag=it.isFixed&&it.estimateMV!=null?`<div class="faint small">估算本息 ¥${fmtMoney(it.estimateMV)}</div>`:'';const check=it.check===true?'<span class="up">✓</span>':it.check===false?'<span class="down">✗</span>':'<span class="faint">—</span>';return `<tr data-key="${esc(it.accountId)}"><td>${esc(it.name)}${srcTag}${stateTag}${fixedTag}${it.isGold?'<span class="tag gold">克数</span>':''}</td><td class="n">¥${fmtMoney(it.beforeMV)}</td><td class="n">${it.isGold?`<span style="display:inline-flex;gap:4px;align-items:center"><input class="grams num" data-grams="${esc(it.accountId)}" type="number" step="0.01" value="${it.actualGrams}"><span class="faint small">g</span><input class="actual num" data-gold-mv="${esc(it.accountId)}" style="width:82px" type="number" step="0.01" value="${it.actualMV}"></span>`:it.isSold?`<span class="faint">已卖出 ¥0.00</span>`:it.source==='investment_platform'?`<span class="faint">自动 ¥${fmtMoney(it.actualMV)}</span>`:`<input class="actual num" data-actual="${esc(it.accountId)}" type="number" step="0.01" value="${it.actualMV}">`}</td><td class="n ${clsNum(it.netFlow)}">${it.netFlow>=0?'+':''}${fmtMoney(it.netFlow)}</td><td class="n" data-expected="${esc(it.accountId)}">¥${fmtMoney(it.expectedMV)}</td><td class="n ${clsNum(diff)}" data-diff="${esc(it.accountId)}">${diff>=0?'+':''}${fmtMoney(diff)}</td><td class="n">${check}</td></tr>`;}).join('');}).join('');
-  const totalUnexplained=t.unexplained;const invPnl=(()=>{const alloc=allocationData();return alloc.items.reduce((s,x)=>s+x.mv-x.cost,0)- (latestSnapshot()?num(latestSnapshot().reconcile?.investmentPnl||0):0);})();
-  $('#view-reconcile').innerHTML=`
-  <div class="card">
-    <div class="card-head"><h2>开始盘点</h2><span class="faint small">${draft.fromDate?'基线：'+draft.fromDate:'首次盘点，无基线'} · 行情：${cache.newest||'未知'}</span><span class="grow"></span><button class="btn small" id="btnOpening">${state.snapshots.length?'编辑期初':'期初录入'}</button><button class="btn small" id="btnReconReset">重置</button></div>
-    <div class="filters"><label>盘点日期 <input type="date" id="reconDate" value="${draft.date}"></label><span class="muted small">刷新投资数据后，证券持仓自动按最新价计算；黄金积存请填写实际克数。</span></div>
-    <div class="summary-strip"><div class="box"><div class="lbl">盘点前总资产</div><div class="val num">¥${fmtMoney(t.before)}</div></div><div class="box"><div class="lbl">盘点后总资产</div><div class="val num">¥${fmtMoney(t.actual)}</div></div><div class="box"><div class="lbl">变化</div><div class="val num ${clsNum(t.delta)}">${t.delta>=0?'+':''}¥${fmtMoney(t.delta)}</div></div><div class="box"><div class="lbl">未解释差额</div><div class="val num ${clsNum(totalUnexplained)}">${totalUnexplained>=0?'+':''}¥${fmtMoney(totalUnexplained)}</div></div></div>
-    <div class="table-wrap"><table class="recon-table"><thead><tr><th>账户 / 持仓</th><th class="n">上次市值</th><th class="n">本次实际</th><th class="n">期间净流入</th><th class="n">应有市值</th><th class="n">差额</th><th class="n">核对</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
-    <div class="form-grid" style="margin-top:12px"><div class="field wide"><label>盘点备注</label><input id="reconNotes" placeholder="可选" value="${esc(draft.notes)}"></div></div>
-    <div class="form-actions"><button class="btn" id="btnReconCancel">取消</button><button class="btn primary" id="btnReconSave">保存盘点</button></div>
-  </div>`;
-  $('#reconDate').onchange=e=>{draft.date=e.target.value;startReconcile();};
-  $$('#view-reconcile [data-actual]').forEach(inp=>inp.oninput=()=>{const it=draft.items.find(x=>x.accountId===inp.dataset.actual);if(!it)return;it.actualMV=num(inp.value);it.check=Math.abs(it.actualMV-it.expectedMV)<0.01;updateReconDerived();});
-  $$('#view-reconcile [data-grams]').forEach(inp=>inp.oninput=()=>{const it=draft.items.find(x=>x.accountId===inp.dataset.grams);if(!it)return;it.actualGrams=num(inp.value);if(it.pricePerGram){it.actualMV=it.actualGrams*num(it.pricePerGram);const mv=$$('#view-reconcile [data-gold-mv]').find(el=>el.dataset.goldMv===it.accountId);if(mv)mv.value=it.actualMV.toFixed(2);}it.check=Math.abs(it.actualGrams-it.expectedGrams)<0.001&&(!it.actualGrams||Math.abs(it.actualMV-it.expectedMV)<0.01);updateReconDerived();});
-  $$('#view-reconcile [data-gold-mv]').forEach(inp=>inp.oninput=()=>{const it=draft.items.find(x=>x.accountId===inp.dataset.goldMv);if(!it)return;it.actualMV=num(inp.value);it.check=Math.abs(it.actualGrams-it.expectedGrams)<0.001&&Math.abs(it.actualMV-it.expectedMV)<0.01;updateReconDerived();});
-  $('#reconNotes').oninput=e=>draft.notes=e.target.value;
-  $('#btnReconReset').onclick=()=>{startReconcile();};
-  $('#btnOpening').onclick=()=>openOpeningModal();
-  $('#btnReconCancel').onclick=()=>{draft=null;switchView('dashboard');};
-  $('#btnReconSave').onclick=saveReconcile;
-}
-function updateReconDerived(){
-  if(!draft)return;const t=reconTotals();const strip=$('#view-reconcile .summary-strip');
-  if(strip)strip.innerHTML=`<div class="box"><div class="lbl">盘点前总资产</div><div class="val num">¥${fmtMoney(t.before)}</div></div><div class="box"><div class="lbl">盘点后总资产</div><div class="val num">¥${fmtMoney(t.actual)}</div></div><div class="box"><div class="lbl">变化</div><div class="val num ${clsNum(t.delta)}">${t.delta>=0?'+':''}¥${fmtMoney(t.delta)}</div></div><div class="box"><div class="lbl">未解释差额</div><div class="val num ${clsNum(t.unexplained)}">${t.unexplained>=0?'+':''}¥${fmtMoney(t.unexplained)}</div></div>`;
-  $$('#view-reconcile [data-expected]').forEach(td=>{const it=draft.items.find(x=>x.accountId===td.dataset.expected);if(it)td.textContent='¥'+fmtMoney(it.expectedMV);});
-  $$('#view-reconcile [data-diff]').forEach(td=>{const it=draft.items.find(x=>x.accountId===td.dataset.diff);if(it){const d=it.actualMV-it.expectedMV;td.textContent=(d>=0?'+':'')+fmtMoney(d);td.className='n '+(d>0?'up':d<0?'down':'');}});
-}
-function saveReconcile(){
-  if(!draft)return;
-  const t=reconTotals();const date=draft.date;
-  const accounts=draft.items.map(it=>{const expected=it.expectedMV;const unexplained=it.actualMV-expected;return {accountId:it.accountId,holdingCode:it.holdingCode||null,name:it.name,pool:it.pool,isLiability:it.isLiability,isGold:it.isGold,measure:it.measure,source:it.source,beforeMV:it.beforeMV,actualMV:it.actualMV,expectedMV:expected,netFlow:it.netFlow,unexplained,actualGrams:it.isGold?it.actualGrams:null,expectedGrams:it.isGold?it.expectedGrams:null,isNew:!!it.isNew,isSold:!!it.isSold};});
-  const beforeLiab=accounts.filter(a=>a.isLiability).reduce((s,a)=>s+a.beforeMV,0);
-  const afterLiab=accounts.filter(a=>a.isLiability).reduce((s,a)=>s+a.actualMV,0);
-  const beforeNetWorth=t.before-beforeLiab;
-  const afterNetWorth=t.actual-afterLiab;
-  const liabilityDelta=afterLiab-beforeLiab;
-  const cashUnexplained=accounts.filter(a=>!a.isLiability&&a.pool==='liquid').reduce((s,a)=>s+a.unexplained,0);
-  const investUnexplained=accounts.filter(a=>!a.isLiability&&a.pool==='invest').reduce((s,a)=>s+a.unexplained,0);
-  const assetUnexplained=accounts.filter(a=>!a.isLiability).reduce((s,a)=>s+a.unexplained,0);
-  const netUnexplained=assetUnexplained-liabilityDelta;
-  const consumption=Math.max(0,-cashUnexplained+liabilityDelta);
-  const investmentPnl=investUnexplained;
-  const goldPnl=accounts.filter(a=>a.isGold).reduce((s,a)=>s+a.unexplained,0);
-  const snap={id:uid(),date,createdAt:nowISO(),totalAssetsBefore:t.before,totalAssetsAfter:t.actual,delta:afterNetWorth-beforeNetWorth,netWorth:afterNetWorth,netWorthBefore:beforeNetWorth,notes:draft.notes,accounts,reconcile:{consumption,investmentPnl,goldPnl,unexplained:netUnexplained,assetsUnexplained:assetUnexplained,liabilityDelta,explained:accounts.reduce((s,a)=>s+(a.netFlow||0),0),fromDate:draft.fromDate}};
-  state.snapshots.push(snap);state.settings.lastReconcileDate=date;
-  draft.items.forEach(it=>{if(it.source==='investment_platform')return;const a=getAccount(it.accountId);if(!a)return;if(it.isGold){a.quantity=it.actualGrams;a.marketValue=it.actualMV;a.asOf=date;}else if(a.isLiability){a.balance=-Math.abs(it.actualMV);a.marketValue=a.balance;a.asOf=date;}else if(a.pool==='liquid'){a.balance=it.actualMV;a.marketValue=it.actualMV;a.asOf=date;}else{a.marketValue=it.actualMV;a.asOf=date;}});
-  saveState({backup:true,label:'reconcile'});draft=null;renderAll();switchView('dashboard');toast('盘点已保存','ok');
-}
-function openingHoldingsForModal(existingSnap){
-  const map=new Map();
-  const cur=currentHoldings().filter(h=>h.code!=='__OPENING_SECURITIES__');
-  const info=platformCacheInfo();
-  const source=cur.length?cur:(info.ok?info.holdings:[]);
-  source.forEach((h,i)=>map.set(h.code,{...h,order:num(h.order)||i}));
-  if(existingSnap&&Array.isArray(existingSnap.accounts)){
-    existingSnap.accounts.filter(x=>x&&x.holdingCode&&x.holdingCode!=='__OPENING_SECURITIES__').forEach((p,i)=>{
-      if(!map.has(p.holdingCode))map.set(p.holdingCode,{code:p.holdingCode,name:p.name||p.holdingCode,shares:0,avgCost:0,currentPrice:num(p.actualMV),lastUpdate:'',order:i});
-    });
-  }
-  return [...map.values()];
-}
-function openOpeningModal(){
-  const existing=state.snapshots.find(s=>s.opening)||null;
-  const openingDate=existing?existing.date:lastDayPrevMonth();
-  const accounts=allAccounts().filter(a=>a.kind==='leaf'&&a.source!=='investment_platform');
-  const acctRows=accounts.map(a=>{
-    const prev=existing?prevSnapshotEntry(existing,{accountId:a.id}):null;
-    const isLiab=!!a.isLiability;const isGold=a.measure==='gold_accumulation';
-    const curMv=isLiab?Math.abs(leafMV(a)):leafMV(a);
-    const curGrams=isGold?num(a.quantity):0;const curAvg=isGold?num(a.avgCost):0;
-    const mv=prev?Math.abs(num(prev.actualMV)):curMv;
-    const grams=prev?num(prev.actualGrams):curGrams;
-    const avg=isGold?(num(a.avgCost)||curAvg):0;
-    const type=accountTypeLabel(accountTypeOf(a));
-    return `<tr><td>${esc(a.name)}<span class="tag">${type}</span></td><td class="n">${isGold?`<input class="grams num" data-open-grams="${esc(a.id)}" type="number" step="0.01" value="${grams}" data-cur="${curGrams}">`:'<span class="faint">—</span>'}</td><td class="n"><input class="actual num" data-open-amt="${esc(a.id)}" data-liab="${isLiab?'1':'0'}" type="number" step="0.01" value="${mv}" data-cur="${curMv}"></td><td class="n">${isGold?`<input class="actual num" data-open-avg="${esc(a.id)}" type="number" step="0.0001" value="${avg}" data-cur="${curAvg}" style="width:96px">`:'<span class="faint">—</span>'}</td></tr>`;
-  }).join('');
-  const holdings=openingHoldingsForModal(existing);
-  const holdRows=holdings.length?holdings.map(h=>{
-    const prev=existing?prevSnapshotEntry(existing,{holdingCode:h.code}):null;
-    const cur=holdingMV(h);const mv=prev?num(prev.actualMV):cur;
-    return `<tr><td>${esc(h.code)}</td><td>${esc(h.name)}<span class="tag plat">投资平台</span></td><td class="n"><input class="actual num" data-open-hold="${esc(h.code)}" type="number" step="0.01" value="${mv}" data-cur="${cur}"></td></tr>`;
-  }).join(''):`<tr><td>—</td><td>证券账户总额（暂未导入持仓）</td><td class="n"><input class="actual num" data-open-total="1" type="number" step="0.01" value="${existing?num((existing.accounts||[]).filter(x=>x.holdingCode).reduce((s,x)=>s+num(x.actualMV),0)):0}" data-cur="0"></td></tr>`;
-  openModal(`<div class="modal-head"><h3>${existing?'编辑期初':'录入期初'}</h3></div><div class="note">按该日期的实际资产填写。保存后总览会立即切换到该日期；期初不计算盈亏和消耗。</div><div class="filters"><label>期初日期 <input type="date" id="openDate" value="${esc(openingDate)}"></label><span class="faint small">建议：上一个自然月最后一天</span></div><div class="grid opening-grid"><div><div class="card-head"><h2>手工账户</h2><span class="grow"></span><span class="faint small">金额 / 克数 / 平均成本</span></div><div class="table-wrap"><table class="recon-table"><thead><tr><th>账户</th><th class="n">克数</th><th class="n">金额 / 欠款</th><th class="n">平均成本/克</th></tr></thead><tbody>${acctRows||'<tr><td colspan="4" class="empty">暂无手工账户</td></tr>'}</tbody></table></div></div><div><div class="card-head"><h2>场内持仓</h2><span class="grow"></span><span class="faint small">按每只填市值</span></div><div class="table-wrap"><table class="recon-table"><thead><tr><th>代码</th><th>名称</th><th class="n">市值</th></tr></thead><tbody>${holdRows}</tbody></table></div></div></div><div class="summary-strip" id="openTotals"></div><div class="form-actions"><button class="btn" id="btnOpenFill">按当前值填入</button><button class="btn" id="btnOpenZero">全部清零</button><span class="grow"></span><button class="btn" data-close>取消</button><button class="btn primary" id="btnSaveOpening">确定</button></div>`);
-  const recalc=()=>{
-    const assets=Array.from(document.querySelectorAll('[data-open-amt]')).filter(el=>el.dataset.liab!=='1').reduce((s,el)=>s+num(el.value),0)+Array.from(document.querySelectorAll('[data-open-hold],[data-open-total]')).reduce((s,el)=>s+num(el.value),0);
-    const liab=Array.from(document.querySelectorAll('[data-open-amt]')).filter(el=>el.dataset.liab==='1').reduce((s,el)=>s+Math.abs(num(el.value)),0);
-    const totals=$('#openTotals');if(totals)totals.innerHTML=`<div class="box"><div class="lbl">总资产</div><div class="val num">¥${fmtMoney(assets)}</div></div><div class="box"><div class="lbl">总负债</div><div class="val num down">¥${fmtMoney(liab)}</div></div><div class="box"><div class="lbl">净资产</div><div class="val num">¥${fmtMoney(assets-liab)}</div></div><div class="box"><div class="lbl">期初日期</div><div class="val num">${esc($('#openDate').value||openingDate)}</div></div>`;
-  };
-  document.querySelectorAll('[data-open-amt],[data-open-grams],[data-open-avg],[data-open-hold],[data-open-total]').forEach(el=>el.oninput=recalc);
-  $('#openDate').onchange=recalc;
-  $('#btnOpenFill').onclick=()=>{document.querySelectorAll('[data-open-amt],[data-open-grams],[data-open-avg],[data-open-hold],[data-open-total]').forEach(el=>{if(el.dataset.cur!=null)el.value=el.dataset.cur;});recalc();};
-  $('#btnOpenZero').onclick=()=>{document.querySelectorAll('[data-open-amt],[data-open-grams],[data-open-avg],[data-open-hold],[data-open-total]').forEach(el=>{el.value='0';});recalc();};
-  $('#btnSaveOpening').onclick=()=>saveOpeningBaseline(existing,holdings);
-  recalc();
-}
-function saveOpeningBaseline(existing,holdingsMeta){
-  const date=$('#openDate').value||lastDayPrevMonth();
-  if(!parseDate(date))return toast('请选择有效的期初日期','err');
-  const accounts=[];const pending=[];let totalAssets=0,totalLiabilities=0;
-  allAccounts().filter(a=>a.kind==='leaf'&&a.source!=='investment_platform').forEach(a=>{
-    const amt=$(`[data-open-amt="${CSS.escape(a.id)}"]`);if(!amt)return;
-    const isLiab=!!a.isLiability;const isGold=a.measure==='gold_accumulation';
-    const mv=isLiab?Math.abs(num(amt.value)):num(amt.value);
-    const grams=isGold?num($(`[data-open-grams="${CSS.escape(a.id)}"]`)?.value):null;
-    const avg=isGold?num($(`[data-open-avg="${CSS.escape(a.id)}"]`)?.value):null;
-    accounts.push({accountId:a.id,holdingCode:null,name:a.name,pool:a.pool,isLiability:isLiab,isGold,measure:a.measure,source:a.source,beforeMV:mv,actualMV:mv,expectedMV:mv,netFlow:0,unexplained:0,actualGrams:isGold?grams:null,expectedGrams:isGold?grams:null,isNew:false,isSold:false,groupId:a.allocationGroupId||null});
-    if(isLiab)totalLiabilities+=mv;else totalAssets+=mv;
-    pending.push({a,mv,grams,avg,isLiab,isGold});
-  });
-  const holdings=[];
-  const holdInputs=Array.from(document.querySelectorAll('[data-open-hold]'));
-  if(holdInputs.length){
-    holdInputs.forEach((inp,idx)=>{
-      const code=inp.dataset.openHold;const meta=(holdingsMeta||[]).find(h=>h.code===code)||{};
-      const mv=num(inp.value);const sharesRaw=num(meta.shares);const shares=sharesRaw>0?sharesRaw:1;
-      const price=sharesRaw>0?mv/sharesRaw:mv;const avgCost=num(meta.avgCost)||price;
-      holdings.push({code,name:meta.name||code,shares,avgCost,currentPrice:price,lastUpdate:date,order:num(meta.order)||idx});
-      accounts.push({accountId:'h:'+code,holdingCode:code,name:meta.name||code,pool:'invest',isLiability:false,isGold:false,measure:'amount',source:'investment_platform',beforeMV:mv,actualMV:mv,expectedMV:mv,netFlow:0,unexplained:0,actualGrams:null,expectedGrams:null,isNew:false,isSold:false,groupId:holdingSetting(code).allocationGroupId||null});
-      totalAssets+=mv;
-    });
-  }else{
-    const total=num($('[data-open-total]')?.value);const code='__OPENING_SECURITIES__';
-    holdings.push({code,name:'证券账户（期初）',shares:1,avgCost:total,currentPrice:total,lastUpdate:date,order:0});
-    accounts.push({accountId:'h:'+code,holdingCode:code,name:'证券账户（期初）',pool:'invest',isLiability:false,isGold:false,measure:'amount',source:'investment_platform',beforeMV:total,actualMV:total,expectedMV:total,netFlow:0,unexplained:0,actualGrams:null,expectedGrams:null,isNew:false,isSold:false,groupId:null});
-    totalAssets+=total;
-  }
-  const later=state.snapshots.filter(s=>String(s.date)>=String(date));
-  if(later.length&&!confirm(`将删除 ${later.length} 条 ${date} 及之后的盘点记录，仅重建期初。继续？`))return;
-  pending.forEach(({a,mv,grams,avg,isLiab,isGold})=>{
-    if(isLiab){a.balance=-mv;a.marketValue=a.balance;a.asOf=date;}
-    else if(isGold){a.quantity=grams;a.avgCost=avg;a.cost=grams*avg;a.marketValue=mv;a.balance=mv;a.asOf=date;}
-    else if(a.pool==='liquid'){a.balance=mv;a.marketValue=mv;a.asOf=date;}
-    else{a.marketValue=mv;a.asOf=date;}
-  });
-  state.snapshots=state.snapshots.filter(s=>String(s.date)<String(date));
-  state.imports=state.imports.filter(i=>i.source!=='opening_baseline');
-  const netWorth=totalAssets-totalLiabilities;
-  state.snapshots.push({id:uid(),date,createdAt:nowISO(),opening:true,totalAssetsBefore:totalAssets,totalAssetsAfter:totalAssets,delta:0,netWorth,netWorthBefore:netWorth,notes:'期初',accounts,reconcile:{opening:true,consumption:0,investmentPnl:0,goldPnl:0,unexplained:0,assetsUnexplained:0,liabilityDelta:0,explained:0,fromDate:null}});
-  ensurePlatformGroup();
-  holdings.forEach(h=>{if(!state.holdingSettings[h.code])state.holdingSettings[h.code]={allocationGroupId:null};});
-  state.imports.push({id:uid(),importedAt:nowISO(),source:'opening_baseline',mode:'opening',holdings});
-  state.settings.startDate=date;state.settings.lastReconcileDate=date;
-  saveState({backup:true,label:'opening_baseline'});draft=null;closeModal();renderAll();switchView('dashboard');toast(`期初已保存：${date} · 净资产 ¥${fmtMoney(netWorth)}`,'ok');
-}
-
-
-function cfgExtraFields(a){
-  const t=accountTypeOf(a);
-  if(t==='gold')return `<div class="cfg-extra"><div class="field"><label>平均成本/克</label><input type="number" step="0.0001" data-cfg-field="avgCost" data-id="${esc(a.id)}" value="${num(a.avgCost)}"></div></div>`;
-  if(t==='fund')return `<div class="cfg-extra"><div class="field"><label>累计投入</label><input type="number" step="0.01" data-cfg-field="cost" data-id="${esc(a.id)}" value="${num(a.cost)}"></div></div>`;
-  if(t==='fixed'){
-    ensureFixedMeta(a);const m=a.meta;
-    const cashOpts=cfgAccounts().filter(x=>x.kind==='leaf'&&x.id!==a.id&&accountTypeOf(x)==='cash').map(x=>`<option value="${esc(x.id)}" ${m.linkedAccountId===x.id?'selected':''}>${esc(x.name)}</option>`).join('');
-    return `<div class="cfg-extra">
-      <div class="field"><label>本金</label><input type="number" step="0.01" data-cfg-field="principal" data-id="${esc(a.id)}" value="${num(m.principal)}"></div>
-      <div class="field"><label>起存日</label><input type="date" data-cfg-field="startDate" data-id="${esc(a.id)}" value="${esc(m.startDate||'')}"></div>
-      <div class="field"><label>到期日</label><input type="date" data-cfg-field="endDate" data-id="${esc(a.id)}" value="${esc(m.endDate||'')}"></div>
-      <div class="field"><label>年利率 %</label><input type="number" step="0.01" data-cfg-field="rate" data-id="${esc(a.id)}" value="${num(m.rate)}"></div>
-      <div class="field"><label>计息方式</label><select data-cfg-field="interestMethod" data-id="${esc(a.id)}"><option value="simple" ${m.interestMethod==='simple'?'selected':''}>单利</option></select></div>
-      <div class="field"><label>到期处理</label><select data-cfg-field="maturityAction" data-id="${esc(a.id)}"><option value="cash" ${m.maturityAction==='cash'?'selected':''}>本息回现金</option><option value="renew" ${m.maturityAction==='renew'?'selected':''}>本金续存，利息回现金</option></select></div>
-      <div class="field"><label>关联现金账户</label><select data-cfg-field="linkedAccountId" data-id="${esc(a.id)}"><option value="">不指定</option>${cashOpts}</select></div>
-    </div>`;
-  }
-  return '';
-}
-function renderAccountConfig(){
-  if(!state)return;
-  const editing=cfgEditing;
-  const sx=cfgDraft||state;
-  const cats=sx.allocationGroups||[];
-  const showArchived=$('#cfgShowArchived')?$('#cfgShowArchived').checked:false;
-  const allGroups=sx.accounts.filter(a=>a.kind==='group'&&(editing||showArchived||!a.archived));
-  const allLeaves=sx.accounts.filter(a=>a.kind==='leaf'&&a.source!=='investment_platform'&&(editing||showArchived||!a.archived));
-  let fPool=$('#cfgPoolFilter')?$('#cfgPoolFilter').value:'all';
-  let fCat=$('#cfgCatFilter')?$('#cfgCatFilter').value:'all';
-  if(!['all','liquid','invest','other'].includes(fPool))fPool='all';
-  if(fCat!=='all'&&fCat!=='__none'&&!cats.some(g=>g.id===fCat))fCat='all';
-  const groupMap=new Map(allGroups.map(g=>[g.id,g]));
-  const leafCat=a=>a.allocationGroupId||'__none';
-  const leafMatch=a=>{
-    if(!editing&&!showArchived&&a.archived)return false;
-    if(!editing&&fPool!=='all'&&(a.pool||'liquid')!==fPool)return false;
-    if(!editing&&fCat!=='all'&&leafCat(a)!==fCat)return false;
-    return true;
-  };
-  const holdingCat=h=>cfgHoldingSetting(h.code).allocationGroupId||'__none';
-  const holdingMatch=h=>{
-    if(!editing&&fPool!=='all'&&fPool!=='invest')return false;
-    if(!editing&&fCat!=='all'&&holdingCat(h)!==fCat)return false;
-    return true;
-  };
-  const groupOptions=cats.map(g=>`<option value="${esc(g.id)}" ${fCat===g.id?'selected':''}>${esc(g.name)}</option>`).join('');
-  const hasUncat=allLeaves.some(a=>!a.allocationGroupId||!cats.some(g=>g.id===a.allocationGroupId))||currentHoldings().some(h=>{const id=cfgHoldingSetting(h.code).allocationGroupId;return !id||!cats.some(g=>g.id===id);});
-  const chips=editing?cats.map(g=>`<span class="cat-chip edit" style="border-color:${esc(g.color)}"><span class="dot" style="background:${esc(g.color)}"></span><input data-cat-name="${esc(g.id)}" value="${esc(g.name)}" maxlength="12"><button data-cat-del="${esc(g.id)}" title="删除类别">×</button></span>`).join('')+`<button class="btn small" id="btnCfgAddCat">＋ 新增类别</button>`:cats.map(g=>`<span class="cat-chip"><span class="dot" style="background:${esc(g.color)}"></span>${esc(g.name)}</span>`).join('')+(hasUncat?'<span class="cat-chip muted"><span class="dot" style="background:#9aa3ae"></span>未分类</span>':'');
-  const typeOpts=sel=>ACCOUNT_TYPES.map(t=>`<option value="${t.id}" ${t.id===sel?'selected':''}>${t.label}</option>`).join('');
-  const catOpts=sel=>`<option value="">未分类</option>`+cats.map(g=>`<option value="${esc(g.id)}" ${sel===g.id?'selected':''}>${esc(g.name)}</option>`).join('');
-  const leafRow=a=>{
-    if(!leafMatch(a))return '';
-    const t=accountTypeOf(a);const summary=cfgTypeSummary(a);
-    if(!editing){
-      return `<div class="cfg-row cfg-leaf"><div class="cfg-name"><span>${esc(a.name)}</span>${a.isLiability?'<span class="tag liab">负债</span>':''}${t==='gold'?'<span class="tag gold">克数</span>':''}</div><div class="cfg-type"><span class="lbl">${accountTypeLabel(t)}</span>${summary?`<span class="cfg-summary" title="${esc(summary)}">${esc(summary)}</span>`:''}</div><div class="cfg-cat">${cfgCategoryChip(a.allocationGroupId)}</div><div class="cfg-actions"></div></div>`;
-    }
-    return `<div class="cfg-row cfg-leaf"><div class="cfg-name"><input class="cfg-input" data-cfg-name="${esc(a.id)}" value="${esc(a.name)}" maxlength="20"></div><div class="cfg-type"><select class="cfg-select" data-cfg-type="${esc(a.id)}">${typeOpts(t)}</select></div><div class="cfg-cat"><select class="cfg-select" data-cfg-cat="${esc(a.id)}">${catOpts(a.allocationGroupId)}</select></div><div class="cfg-actions"><button class="cfg-icon add" data-cfg-add-sibling="${esc(a.id)}" title="新增同级二级账户">＋</button><button class="cfg-icon del" data-cfg-del-leaf="${esc(a.id)}" title="删除二级账户">－</button></div></div>${cfgExtraFields(a)}`;
-  };
-  const holdingRow=h=>{
-    if(!holdingMatch(h))return '';
-    const cat=cfgHoldingSetting(h.code).allocationGroupId;
-    if(!editing){
-      return `<div class="cfg-row cfg-leaf"><div class="cfg-name"><span>${esc(h.name)}</span><span class="tag plat">投资平台</span><span class="code">${esc(h.code)}</span></div><div class="cfg-type"><span class="lbl">场内</span><span class="cfg-summary">自动同步</span></div><div class="cfg-cat">${cfgCategoryChip(cat)}</div><div class="cfg-actions"></div></div>`;
-    }
-    return `<div class="cfg-row cfg-leaf"><div class="cfg-name"><span>${esc(h.name)}</span><span class="tag plat">投资平台</span><span class="code">${esc(h.code)}</span></div><div class="cfg-type"><span class="lbl">场内</span><span class="cfg-summary">自动同步</span></div><div class="cfg-cat"><select class="cfg-select" data-cfg-hcat="${esc(h.code)}">${catOpts(cat)}</select></div><div class="cfg-actions"></div></div>`;
-  };
-  const groupBlock=g=>{
-    const isPlatform=g.holdingsSource==='investment_platform';
-    const kids=allLeaves.filter(a=>a.parentId===g.id&&leafMatch(a));
-    const holds=isPlatform?currentHoldings().filter(holdingMatch):[];
-    if(!editing&&!isPlatform&&!kids.length&&(fPool!=='all'||fCat!=='all'))return '';
-    if(!editing&&isPlatform&&!holds.length&&(fPool!=='all'||fCat!=='all'))return '';
-    const head=editing&&!isPlatform?`<div class="cfg-row cfg-group-row"><div class="cfg-name"><input class="cfg-input" data-cfg-gname="${esc(g.id)}" value="${esc(g.name)}" maxlength="20"></div><div class="cfg-actions"><button class="cfg-icon add" data-cfg-add-child="${esc(g.id)}" title="新增二级账户">＋</button><button class="cfg-icon del" data-cfg-del-group="${esc(g.id)}" title="删除一级账户">－</button></div></div>`:`<div class="cfg-row cfg-group-row"><div class="cfg-name"><span>${esc(g.name)}</span>${isPlatform?'<span class="tag plat">系统</span>':''}</div><div class="cfg-actions"></div></div>`;
-    return `<div class="cfg-group">${head}${isPlatform?holds.map(holdingRow).join('')||'<div class="cfg-empty">暂无持仓，刷新投资数据后自动出现</div>':kids.map(leafRow).join('')}</div>`;
-  };
-  const orderedGroups=[...allGroups].sort((a,b)=>num(a.order)-num(b.order)||String(a.name).localeCompare(String(b.name),'zh-CN'));
-  let tree=orderedGroups.map(groupBlock).join('');
-  if(!orderedGroups.some(g=>g.holdingsSource==='investment_platform')&&currentHoldings().length){tree+=`<div class="cfg-group"><div class="cfg-row cfg-group-row"><div class="cfg-name"><span>证券账户</span><span class="tag plat">系统</span></div><div class="cfg-actions"></div></div>${currentHoldings().filter(holdingMatch).map(holdingRow).join('')}</div>`;}
-  const orphan=allLeaves.filter(a=>!a.parentId||!groupMap.has(a.parentId)).filter(leafMatch);
-  if(orphan.length)tree+=`<div class="cfg-group"><div class="cfg-row cfg-group-row"><div class="cfg-name"><span>未归属账户</span></div><div class="cfg-actions"></div></div>${orphan.map(leafRow).join('')}</div>`;
-  const filterHtml=editing?'<div class="note">编辑中：显示全部账户；修改后点“确定”保存。金额/市值请到盘点页填写。</div>':`<div class="filters"><select id="cfgPoolFilter"><option value="all">全部资金池</option><option value="liquid" ${fPool==='liquid'?'selected':''}>现金/消费</option><option value="invest" ${fPool==='invest'?'selected':''}>投资</option><option value="other" ${fPool==='other'?'selected':''}>其他</option></select><select id="cfgCatFilter"><option value="all">全部类别</option><option value="__none" ${fCat==='__none'?'selected':''}>未分类</option>${groupOptions}</select><label><input type="checkbox" id="cfgShowArchived" ${showArchived?'checked':''}> 显示归档</label></div>`;
-  $('#view-accounts').innerHTML=`<div class="card"><div class="card-head"><div><h2>账户配置</h2><div class="small muted">主数据维护 · 金额/市值请到盘点页填写</div></div><span class="grow"></span>${editing?'<button class="btn" id="btnCfgCancel">取消</button><button class="btn primary" id="btnCfgSave">确定</button>':'<button class="btn primary" id="btnCfgEdit">编辑</button>'}</div>${filterHtml}<div class="cfg-cats"><span class="lbl">配置类别</span>${chips}</div><div class="cfg-tree">${tree||'<div class="cfg-empty">还没有账户。点下方“增加一级账户”开始。</div>'}</div>${editing?'<div class="cfg-add-group"><button class="btn" id="btnCfgAddGroup">＋ 增加一级账户</button></div>':''}</div>`;
-  bindAccountConfigEvents();
-}
-function bindAccountConfigEvents(){
-  const edit=$('#btnCfgEdit');if(edit)edit.onclick=startAccountConfigEdit;
-  const cancel=$('#btnCfgCancel');if(cancel)cancel.onclick=cancelAccountConfigEdit;
-  const save=$('#btnCfgSave');if(save)save.onclick=saveAccountConfigEdit;
-  const addGroup=$('#btnCfgAddGroup');if(addGroup)addGroup.onclick=cfgAddGroup;
-  const addCat=$('#btnCfgAddCat');if(addCat)addCat.onclick=cfgAddCategory;
-  const pf=$('#cfgPoolFilter');if(pf)pf.onchange=renderAccountConfig;
-  const cf=$('#cfgCatFilter');if(cf)cf.onchange=renderAccountConfig;
-  const sa=$('#cfgShowArchived');if(sa)sa.onchange=renderAccountConfig;
-  if(!cfgEditing)return;
-  $$('#view-accounts [data-cfg-gname]').forEach(el=>el.oninput=()=>{const g=cfgDraft.accounts.find(x=>x.id===el.dataset.cfgGname);if(g)g.name=el.value;});
-  $$('#view-accounts [data-cfg-name]').forEach(el=>el.oninput=()=>{const a=cfgDraft.accounts.find(x=>x.id===el.dataset.cfgName);if(a)a.name=el.value;});
-  $$('#view-accounts [data-cfg-type]').forEach(el=>el.onchange=()=>{const a=cfgDraft.accounts.find(x=>x.id===el.dataset.cfgType);if(!a)return;applyAccountType(a,el.value);renderAccountConfig();focusCfg('[data-cfg-type="'+a.id+'"]');});
-  $$('#view-accounts [data-cfg-cat]').forEach(el=>el.onchange=()=>{const a=cfgDraft.accounts.find(x=>x.id===el.dataset.cfgCat);if(a)a.allocationGroupId=el.value||null;});
-  $$('#view-accounts [data-cfg-hcat]').forEach(el=>el.onchange=()=>{const code=el.dataset.cfgHcat;if(!cfgDraft.holdingSettings[code])cfgDraft.holdingSettings[code]={allocationGroupId:null};cfgDraft.holdingSettings[code].allocationGroupId=el.value||null;});
-  $$('#view-accounts [data-cfg-field]').forEach(el=>el.oninput=()=>{const a=cfgDraft.accounts.find(x=>x.id===el.dataset.id);if(!a)return;const f=el.dataset.cfgField;if(f==='avgCost')a.avgCost=num(el.value);else if(f==='cost')a.cost=num(el.value);else{ensureFixedMeta(a);if(f==='principal')a.meta.principal=num(el.value);else if(f==='rate')a.meta.rate=num(el.value);else a.meta[f]=el.value;}});
-  $$('#view-accounts [data-cat-name]').forEach(el=>el.oninput=()=>{const g=cfgDraft.allocationGroups.find(x=>x.id===el.dataset.catName);if(g)g.name=el.value;});
-  $$('#view-accounts [data-cat-del]').forEach(b=>b.onclick=()=>cfgDeleteCategory(b.dataset.catDel));
-  $$('#view-accounts [data-cfg-add-child]').forEach(b=>b.onclick=()=>cfgAddChild(b.dataset.cfgAddChild));
-  $$('#view-accounts [data-cfg-add-sibling]').forEach(b=>b.onclick=()=>{const a=cfgDraft.accounts.find(x=>x.id===b.dataset.cfgAddSibling);if(a)cfgAddChild(a.parentId);});
-  $$('#view-accounts [data-cfg-del-group]').forEach(b=>b.onclick=()=>cfgDeleteGroup(b.dataset.cfgDelGroup));
-  $$('#view-accounts [data-cfg-del-leaf]').forEach(b=>b.onclick=()=>cfgDeleteLeaf(b.dataset.cfgDelLeaf));
-}
-function focusCfg(sel){setTimeout(()=>{const el=document.querySelector(sel);if(el){el.focus();if(el.select)el.select();}},0);}
-function startAccountConfigEdit(){
-  if(!state)return;
-  cfgDraft=JSON.parse(JSON.stringify({accounts:state.accounts,allocationGroups:state.allocationGroups,holdingSettings:state.holdingSettings||{}}));
-  cfgEditing=true;renderAccountConfig();
-}
-function cancelAccountConfigEdit(){cfgEditing=false;cfgDraft=null;renderAccountConfig();}
-function cfgAddCategory(){
-  if(!cfgDraft)return;
-  const gs=cfgDraft.allocationGroups;const g={id:uid(),name:uniqueCategoryName(gs),color:nextCategoryColor(gs),order:gs.length+1};
-  gs.push(g);renderAccountConfig();focusCfg('[data-cat-name="'+g.id+'"]');
-}
-function cfgDeleteCategory(id){
-  if(!cfgDraft)return;const g=cfgCategory(id);if(!g)return;
-  const used=cfgDraft.accounts.filter(a=>a.allocationGroupId===id).length+Object.values(cfgDraft.holdingSettings||{}).filter(s=>s&&s.allocationGroupId===id).length;
-  if(used&&!confirm(`类别“${g.name}”下有 ${used} 项，删除后变为未分类。继续？`))return;
-  cfgDraft.allocationGroups=cfgDraft.allocationGroups.filter(x=>x.id!==id);
-  cfgDraft.accounts.forEach(a=>{if(a.allocationGroupId===id)a.allocationGroupId=null;});
-  Object.values(cfgDraft.holdingSettings||{}).forEach(s=>{if(s&&s.allocationGroupId===id)s.allocationGroupId=null;});
-  renderAccountConfig();
-}
-function cfgAddGroup(){
-  if(!cfgDraft)return;
-  const gs=cfgDraft.accounts.filter(a=>a.kind==='group');
-  const order=gs.reduce((m,g)=>Math.max(m,num(g.order)),0)+1;
-  const g={id:uid(),parentId:null,name:'一级账户',kind:'group',pool:'other',order,archived:false,tags:[],meta:{}};
-  cfgDraft.accounts.push(g);renderAccountConfig();focusCfg('[data-cfg-gname="'+g.id+'"]');
-}
-function cfgAddChild(groupId){
-  if(!cfgDraft)return;const g=cfgDraft.accounts.find(a=>a.id===groupId&&a.kind==='group');if(!g||g.holdingsSource)return;
-  const type=defaultLeafTypeForGroup(g.name)||'cash';
-  const order=cfgDraft.accounts.filter(a=>a.parentId===groupId).reduce((m,a)=>Math.max(m,num(a.order)),0)+1;
-  const a={id:uid(),parentId:groupId,name:'二级账户',kind:'leaf',pool:'other',allocationGroupId:null,measure:'amount',tags:[],source:'manual',isConsumptionAccount:false,isLiquid:false,balance:0,marketValue:0,cost:0,quantity:null,unit:'g',avgCost:null,asOf:today(),archived:false,meta:{},order};
-  applyAccountType(a,type);if(type==='gold'){a.quantity=0;a.avgCost=0;}if(type==='fixed')ensureFixedMeta(a);
-  cfgDraft.accounts.push(a);renderAccountConfig();focusCfg('[data-cfg-name="'+a.id+'"]');
-}
-function cfgDeleteGroup(id){
-  if(!cfgDraft)return;const g=cfgDraft.accounts.find(a=>a.id===id&&a.kind==='group');if(!g)return;
-  if(g.holdingsSource)return toast('证券账户由投资平台自动维护，不能删除','err');
-  const kids=cfgDraft.accounts.filter(a=>a.kind==='leaf'&&a.parentId===id);
-  if(!confirm(`删除一级账户“${g.name}”${kids.length?`及下属 ${kids.length} 个二级账户`:''}？`))return;
-  cfgDraft.accounts=cfgDraft.accounts.filter(a=>a.id!==id&&a.parentId!==id);renderAccountConfig();
-}
-function cfgDeleteLeaf(id){
-  if(!cfgDraft)return;const a=cfgDraft.accounts.find(x=>x.id===id&&x.kind==='leaf');if(!a)return;
-  if(a.source==='investment_platform')return;
-  if(!confirm(`删除二级账户“${a.name}”？`))return;
-  cfgDraft.accounts=cfgDraft.accounts.filter(x=>x.id!==id);renderAccountConfig();
-}
-function cfgValidate(){
-  const errors=[];const warnings=[];if(!cfgDraft)return {errors,warnings};
-  const cats=cfgDraft.allocationGroups||[];const seen=new Set();
-  cats.forEach(g=>{const n=String(g.name||'').trim();if(!n)errors.push('配置类别名称不能为空');else if(seen.has(n))errors.push(`配置类别名称重复：${n}`);else seen.add(n);});
-  const groups=cfgDraft.accounts.filter(a=>a.kind==='group');const leaves=cfgDraft.accounts.filter(a=>a.kind==='leaf'&&a.source!=='investment_platform');
-  const groupMap=new Map(groups.map(g=>[g.id,g]));const nameMap=new Set();
-  groups.forEach(g=>{if(!String(g.name||'').trim())errors.push('一级账户名称不能为空');const kids=leaves.filter(a=>a.parentId===g.id);if(!kids.length&&!g.holdingsSource)warnings.push(`一级账户“${g.name||'未命名'}”没有二级账户`);});
-  leaves.forEach(a=>{
-    const name=String(a.name||'').trim();if(!name)errors.push('二级账户名称不能为空');
-    if(!a.parentId||!groupMap.has(a.parentId))warnings.push(`二级账户“${name||'未命名'}”未归属一级账户`);
-    if(!a.allocationGroupId||!cats.some(g=>g.id===a.allocationGroupId))warnings.push(`“${name||'未命名'}”未分类`);
-    const t=accountTypeOf(a);
-    if(t==='fixed'){ensureFixedMeta(a);const m=a.meta;if(num(m.principal)<=0)warnings.push(`定存“${name||'未命名'}”未填本金`);if(num(m.principal)>0&&(!m.startDate||!m.endDate))errors.push(`定存“${name||'未命名'}”需要起存日和到期日`);if(m.startDate&&m.endDate&&String(m.endDate)<String(m.startDate))errors.push(`定存“${name||'未命名'}”到期日早于起存日`);if(num(m.rate)<0)errors.push(`定存“${name||'未命名'}”利率不能为负`);}
-    if(t==='gold'&&num(a.avgCost)<0)errors.push(`积存金“${name||'未命名'}”均价/克不能为负`);
-    if(t==='gold'&&!num(a.avgCost))warnings.push(`积存金“${name||'未命名'}”均价/克为 0`);
-    if(t==='fund'&&num(a.cost)<0)errors.push(`基金“${name||'未命名'}”累计投入不能为负`);
-    if(t==='fund'&&!num(a.cost))warnings.push(`基金“${name||'未命名'}”累计投入为 0`);
-    if(name){const key=String(a.parentId||'__none')+'|'+name;if(nameMap.has(key))warnings.push(`同一一级账户下名称重复：${name}`);else nameMap.add(key);}
-  });
-  currentHoldings().forEach(h=>{const st=cfgHoldingSetting(h.code);if(!st.allocationGroupId||!cats.some(g=>g.id===st.allocationGroupId))warnings.push(`持仓“${h.name}”未分类`);});
-  return {errors,warnings};
-}
-function showCfgIssues(errors,warnings,allowSave){
-  const list=[...errors.map(t=>({t,type:'err'})),...warnings.map(t=>({t,type:'warn'}))];
-  const body=`<div class="modal-head"><h3>${errors.length?'账户配置还有问题':'账户配置检查'}</h3></div><div class="small muted">${errors.length?'请先修正以下问题：':'以下项目未完成，可以继续保存：'}</div><div class="table-wrap" style="margin-top:10px"><table><tbody>${list.slice(0,20).map(x=>`<tr><td class="${x.type==='err'?'down':'muted'}">${x.type==='err'?'错误':'提示'}</td><td>${esc(x.t)}</td></tr>`).join('')}</tbody></table></div>${list.length>20?`<div class="faint small" style="margin-top:6px">另 ${list.length-20} 项…</div>`:''}<div class="form-actions"><button class="btn" data-close>返回修改</button>${allowSave?'<button class="btn primary" id="btnCfgForceSave">仍然保存</button>':''}</div>`;
-  const ov=openModal(body);
-  if(allowSave){const b=ov.querySelector('#btnCfgForceSave');if(b)b.onclick=()=>{closeModal();commitAccountConfigEdit();};}
-}
-function commitAccountConfigEdit(){
-  if(!cfgDraft)return;
-  currentHoldings().forEach(h=>{if(!cfgDraft.holdingSettings[h.code])cfgDraft.holdingSettings[h.code]={allocationGroupId:null};});
-  state.accounts=cfgDraft.accounts;state.allocationGroups=cfgDraft.allocationGroups;state.holdingSettings=cfgDraft.holdingSettings;
-  normalize(state);cfgEditing=false;cfgDraft=null;draft=null;
-  saveState({backup:true,label:'account_config'});renderAll();toast('账户配置已保存','ok');
-}
-function saveAccountConfigEdit(){
-  if(!cfgDraft)return;const {errors,warnings}=cfgValidate();
-  if(errors.length)return showCfgIssues(errors,[],false);
-  if(warnings.length)return showCfgIssues([],warnings,true);
-  commitAccountConfigEdit();
-}
-function renderSettings(){
-  const backups=listBackups();const imports=[...state.imports].reverse();const flows=[...state.flows].sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,20);const snaps=[...state.snapshots].sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,10);
-  $('#view-settings').innerHTML=`<div class="grid" style="grid-template-columns:1fr 1fr">
-  <div class="card"><div class="card-head"><h2>基础设置</h2></div><div class="form-grid"><div class="field"><label>起始日期</label><input type="date" id="setStartDate" value="${esc(state.settings.startDate)}"></div><div class="field"><label>月预算</label><input type="number" id="setBudget" value="${state.settings.budget}"></div><div class="field"><label>份额口径</label><select id="setShareBase"><option value="total_assets">总资产</option><option value="investment_assets">投资资产</option></select></div><div class="field"><label>平均消耗窗口（月）</label><input type="number" id="setAvgWindow" min="1" max="12" value="${state.settings.averageWindowMonths}"></div><div class="field wide"><label><input type="checkbox" id="setIncludeExt" ${state.settings.includeExternalOutflowInBudget?'checked':''}> 外部流出计入月预算</label></div></div><div class="form-actions"><button class="btn primary" id="btnSaveSettings">保存设置</button></div></div>
-  <div class="card"><div class="card-head"><h2>外部资金与转账</h2><span class="grow"></span><button class="btn small" id="btnFlowFromSettings">记一笔</button></div><div class="table-wrap"><table><thead><tr><th>日期</th><th>类型</th><th class="n">金额</th><th></th></tr></thead><tbody>${flows.length?flows.map(f=>`<tr><td>${esc(f.date)}</td><td>${f.type==='external_in'?'外部流入':f.type==='external_out'?'外部流出':'内部转账'}</td><td class="n">¥${fmtMoney(f.amount)}</td><td><button class="icon-btn danger" data-del-flow="${f.id}">删除</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">暂无记录</td></tr>'}</tbody></table></div><div class="note">盘点会自动把基线日之后的流水计入“应有市值”。</div></div>
-  </div>
-  <div class="card" style="margin-top:14px"><div class="card-head"><h2>数据安全</h2><span class="grow"></span><button class="btn small" id="btnExport">导出 JSON</button><button class="btn small" id="btnImportFile">导入 JSON</button><button class="btn small danger" id="btnResetAll">清空数据</button></div><div class="filters"><button class="btn small" id="btnBackupNow">立即备份</button><span class="faint small">自动保留最近 8 份备份；损坏数据会另存为 ${CORRUPT_KEY}。</span></div><div class="table-wrap"><table><thead><tr><th>时间</th><th>标签</th><th>大小</th><th></th></tr></thead><tbody>${backups.length?backups.map(b=>`<tr><td>${esc(b.time)}</td><td>${esc(b.label)}</td><td>${fmtInt(b.size)} B</td><td><button class="icon-btn" data-restore="${esc(b.key)}">恢复</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">暂无备份</td></tr>'}</tbody></table></div></div>
-  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
-  <div class="card"><div class="card-head"><h2>盘点历史</h2></div><div class="table-wrap"><table><thead><tr><th>日期</th><th class="n">消耗</th><th class="n">未解释</th><th class="n">净值</th></tr></thead><tbody>${snaps.length?snaps.map(s=>`<tr><td>${esc(s.date)}</td><td class="n">¥${fmtMoney(s.reconcile?.consumption)}</td><td class="n ${clsNum(s.reconcile?.unexplained)}">${fmtMoney(s.reconcile?.unexplained)}</td><td class="n">¥${fmtMoney(s.netWorth)}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">暂无盘点</td></tr>'}</tbody></table></div></div>
-  <div class="card"><div class="card-head"><h2>持仓刷新历史</h2></div><div class="table-wrap"><table><thead><tr><th>时间</th><th>方式</th><th class="n">持仓数</th><th class="n">市值</th></tr></thead><tbody>${imports.length?imports.slice(0,10).map(i=>`<tr><td>${esc((i.importedAt||'').slice(0,19).replace('T',' '))}</td><td>${i.source==='opening_baseline'?'期初':i.mode==='auto'?'自动刷新':i.mode==='manual'?'手动刷新':'导入'}</td><td class="n">${i.holdings.length}</td><td class="n">¥${fmtMoney(i.holdings.reduce((s,h)=>s+holdingMV(h),0))}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">暂无记录</td></tr>'}</tbody></table></div></div>
-  </div><div class="card" style="margin-top:14px"><div class="card-head"><h2>关于</h2><span class="grow"></span><button class="btn small" id="btnSelfTest">运行自检</button></div><div class="small muted">多多 ${BUILD} · 登录后数据保存在 Supabase 云端；本机只保留当前会话缓存，退出登录会清除。导出 JSON 可完整备份。</div></div>`;
-  $('#setShareBase').value=state.settings.allocationShareBase;$('#btnSaveSettings').onclick=saveSettings;$('#btnBackupNow').onclick=()=>{backupState('manual');renderSettings();toast('已备份','ok');};
-  $('#btnExport').onclick=exportJSON;$('#btnImportFile').onclick=importJSONFile;$('#btnResetAll').onclick=resetAll;
-  $('#btnFlowFromSettings').onclick=()=>openFlowModal();$('#btnSelfTest').onclick=runSelfTest;
-  $$('#view-settings [data-del-flow]').forEach(b=>b.onclick=()=>{state.flows=state.flows.filter(f=>f.id!==b.dataset.delFlow);saveState();renderSettings();toast('已删除流水','ok');});
-  $$('#view-settings [data-restore]').forEach(b=>b.onclick=()=>{if(confirm('恢复该备份？当前数据会先自动备份。'))restoreBackup(b.dataset.restore);});
-}
-function saveSettings(){state.settings.startDate=$('#setStartDate').value||today();state.settings.budget=num($('#setBudget').value);state.settings.allocationShareBase=$('#setShareBase').value;state.settings.averageWindowMonths=clamp(num($('#setAvgWindow').value)||6,1,12);state.settings.includeExternalOutflowInBudget=$('#setIncludeExt').checked;saveState({backup:true,label:'settings'});renderAll();toast('设置已保存','ok');}
-function toast(msg,type=''){const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;$('#toastRoot').appendChild(el);setTimeout(()=>el.remove(),2800);}
-function openModal(html){closeModal();const back=document.createElement('div');back.className='modal-back';back.innerHTML=`<div class="modal">${html}</div>`;back.onclick=e=>{if(e.target===back)closeModal();};$('#modalRoot').appendChild(back);back.querySelectorAll('[data-close]').forEach(el=>{el.onclick=closeModal;});return back;}
-function closeModal(){if(modalCleanup){try{modalCleanup();}catch(e){}modalCleanup=null;}$('#modalRoot').innerHTML='';}
-
-
-function openFlowModal(){
-  const accountOpts=allAccounts().filter(a=>a.kind==='leaf'&&!a.isLiability).map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')+currentHoldings().map(h=>`<option value="h:${h.code}">${esc(h.name)}（证券）</option>`).join('');
-  openModal(`<div class="modal-head"><h3>记一笔外部资金 / 转账</h3></div><div class="form-grid"><div class="field"><label>日期</label><input id="flowDate" type="date" value="${today()}"></div><div class="field"><label>类型</label><select id="flowType"><option value="external_in">外部流入</option><option value="external_out">外部流出</option><option value="transfer">内部转账</option></select></div><div class="field"><label>金额</label><input id="flowAmount" type="number" step="0.01" placeholder="0.00"></div><div class="field"><label>备注</label><input id="flowNote" placeholder="可选"></div><div class="field" id="flowFromField"><label>从</label><select id="flowFrom"><option value="">请选择</option>${accountOpts}</select></div><div class="field" id="flowToField"><label>到</label><select id="flowTo"><option value="">请选择</option>${accountOpts}</select></div></div><div class="form-actions"><button class="btn" data-close>取消</button><button class="btn primary" id="btnSaveFlow">确定</button></div>`);
-  const sync=()=>{const t=$('#flowType').value;$('#flowFromField').style.display=t==='external_in'?'none':'';$('#flowToField').style.display=t==='external_out'?'none':'';};$('#flowType').onchange=sync;sync();
-  $('#btnSaveFlow').onclick=()=>{const amount=num($('#flowAmount').value);if(amount<=0)return toast('请输入金额','err');const type=$('#flowType').value;const from=$('#flowFrom').value,to=$('#flowTo').value;if(type==='transfer'&&(!from||!to))return toast('请选择转出和转入账户','err');if(type==='transfer'&&from===to)return toast('转出与转入不能相同','err');if(type==='external_in'&&!to)return toast('请选择流入账户','err');if(type==='external_out'&&!from)return toast('请选择流出账户','err');state.flows.push({id:uid(),date:$('#flowDate').value||today(),type,amount,fromAccountId:from||null,toAccountId:to||null,note:$('#flowNote').value.trim(),status:'pending',createdAt:nowISO()});saveState({backup:true,label:'flow'});closeModal();renderAll();toast('已记录','ok');};
-}
-
-
 function exportJSON(){
-  const payload={app:'多多',build:BUILD,exportedAt:nowISO(),data:state};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`多多-备份-${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出 JSON','ok');
+  const payload={app:'多多',build:BUILD,exportedAt:nowISO(),data:state};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`多多-备份-${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出 JSON','ok');
 }
 function importJSONFile(){
-  const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=()=>{const file=inp.files&&inp.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const obj=JSON.parse(String(reader.result));const data=obj&&obj.data?obj.data:obj;if(!data||!Array.isArray(data.accounts))throw new Error('缺少 accounts');if(!confirm('导入将覆盖当前数据（先自动备份）。继续？'))return;backupState('before_json_import');state=normalize(data);saveState();renderAll();toast('导入成功','ok');}catch(e){toast('导入失败：'+e.message,'err');}};reader.readAsText(file,'utf-8');};inp.click();
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=()=>{
+    const file=inp.files&&inp.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const obj=JSON.parse(String(reader.result));const data=obj&&obj.data?obj.data:obj;
+        if(isLegacyState(data))throw new Error('这是旧版数据，不能直接导入；请参考旧数据 Markdown 重建。');
+        if(!data||!Array.isArray(data.accounts))throw new Error('缺少 accounts');
+        if(data.version!==2)throw new Error('数据版本不兼容（需要 version 2）');
+        if(!confirm('导入将覆盖当前数据（先自动备份）。继续？'))return;
+        if(!confirm('再次确认：导入后当前数据将被替换，且会同步到云端。继续？'))return;
+        backupState('before_json_import');state=normalizeV2(data);draft=null;cfgEditing=false;cfgDraft=null;
+        saveState();renderAll();toast('导入成功','ok');
+      }catch(e){toast('导入失败：'+e.message,'err');}
+    };
+    reader.readAsText(file,'utf-8');
+  };
+  inp.click();
 }
-function resetAll(){if(!confirm('清空全部本地数据？此操作会先自动备份，但仍建议先导出 JSON。'))return;backupState('before_reset');state=defaultState();saveState();draft=null;renderAll();switchView('dashboard');toast('已恢复默认数据','ok');}
+function resetAll(){
+  if(!confirm('清空全部数据？此操作会先自动备份，但仍建议先导出 JSON。'))return;
+  if(!confirm('再次确认：清空后账户只剩系统“证券账户”，且不可撤销。继续？'))return;
+  backupState('before_reset');
+  state=defaultState();draft=null;cfgEditing=false;cfgDraft=null;
+  saveState({backup:true,label:'reset'});
+  renderAll();switchView('dashboard');toast('已清空数据','ok');
+}
+function withTempState(patch,fn){
+  const saved={};Object.keys(patch).forEach(k=>{saved[k]=state[k];state[k]=patch[k];});
+  try{return fn();}finally{Object.keys(saved).forEach(k=>{state[k]=saved[k];});}
+}
 function runSelfTest(){
   const results=[];const ok=(name,fn)=>{try{const v=fn();results.push({name,pass:!!v,detail:v===true?'通过':String(v)});}catch(e){results.push({name,pass:false,detail:e.message});}};
-  ok('默认账户树存在银行/证券/负债',()=>{const s=defaultState();return s.accounts.some(a=>a.name==='银行')&&s.accounts.some(a=>a.name==='证券账户')&&s.accounts.some(a=>a.isLiability);});
-  ok('默认配置分组无“其他”',()=>DEFAULT_GROUPS.every(g=>g.name!=='其他'));
-  ok('百分比与金额格式化',()=>fmtPct(12.345)==='12.35%'&&fmtMoney(-1234.5)==='-1,234.50');
-  ok('分组份额合计约 100%',()=>{const rows=[{mv:50},{mv:50}];const total=100;const sum=rows.reduce((s,x)=>s+x.mv/total*100,0);return Math.abs(sum-100)<1e-9;});
-  ok('黄金汇总只累加克数账户',()=>{const s=summarizeGold([{quantity:1.5,avgCost:500,marketValue:900},{quantity:2,avgCost:400,marketValue:1000}]);return Math.abs(s.grams-3.5)<1e-9&&Math.abs(s.cost-1550)<1e-9&&Math.abs(s.avg-442.8571)<1;});
-  ok('外部流水按账户净额计算',()=>{const saved=state.flows;state.flows=[{id:'1',date:'2026-01-01',type:'external_in',toAccountId:'a',amount:100,status:'pending'},{id:'2',date:'2026-01-02',type:'external_out',fromAccountId:'a',amount:30,status:'pending'}];const v=netFlowsForAccount('a','2025-12-31','2026-12-31');state.flows=saved;return Math.abs(v-70)<1e-9;});
-  ok('导入过滤场外基金与清仓',()=>{const h=[{type:'stock',cleared:false},{type:'fund',cleared:false},{type:'stock',cleared:true}];const f=h.filter(x=>x.type!=='fund'&&x.cleared!==true);return f.length===1;});
-  ok('账户市值不重复计算证券持仓',()=>{return Array.isArray(state.accounts)&&Array.isArray(state.snapshots);});
-  ok('快照按日期取最近基线',()=>{const saved=state.snapshots;state.snapshots=[{date:'2026-01-01',netWorth:1},{date:'2026-03-01',netWorth:3},{date:'2026-02-01',netWorth:2}];const b=snapshotBefore('2026-02-15');state.snapshots=saved;return b&&b.date==='2026-02-01';});
-  ok('最新快照取最后一条',()=>{const saved=state.snapshots;state.snapshots=[{date:'2026-01-01',netWorth:1},{date:'2026-03-01',netWorth:3},{date:'2026-02-01',netWorth:2}];const v=latestSnapshot();state.snapshots=saved;return v&&v.date==='2026-03-01';});
-  ok('上一份快照按持仓代码取值',()=>{const s={accounts:[{holdingCode:'510880',actualMV:123}]};const p=prevSnapshotEntry(s,{holdingCode:'510880'});return p&&p.actualMV===123;});
-  const pass=results.filter(r=>r.pass).length;openModal(`<div class="modal-head"><h3>自检 ${pass}/${results.length}</h3></div><div class="table-wrap"><table><thead><tr><th>项目</th><th>结果</th><th>说明</th></tr></thead><tbody>${results.map(r=>`<tr><td>${esc(r.name)}</td><td class="${r.pass?'up':'down'}">${r.pass?'通过':'失败'}</td><td class="faint">${esc(r.detail)}</td></tr>`).join('')}</tbody></table></div><div class="form-actions"><button class="btn primary" data-close>确定</button></div>`);
+  ok('默认状态只有系统证券账户和兜底行',()=>{const s=defaultState();return s.accounts.filter(a=>a.kind==='group').length===1&&s.accounts.find(a=>a.kind==='group').id===SYSTEM_GROUP_ID&&s.accounts.some(a=>a.fallback)&&s.allocationGroups.length===0;});
+  ok('旧版状态能被识别',()=>isLegacyState({version:1,accounts:[]})&&isLegacyState({accounts:[{pool:'liquid'}]})&&!isLegacyState({version:2,accounts:[]}));
+  ok('金额与百分比格式化',()=>fmtPct(12.345)==='12.35%'&&fmtMoney(-1234.5)==='-1,234.50');
+  ok('正负金额直接相加',()=>withTempState({accounts:[{id:'g',kind:'group',order:1},{id:'a',parentId:'g',kind:'leaf',amount:100},{id:'b',parentId:'g',kind:'leaf',amount:-30}],imports:[],holdingSettings:{}},()=>Math.abs(totalAssets()-70)<1e-9));
+  ok('配置类别金额之和等于总资产',()=>{const d=allocationData();const sum=d.rows.reduce((s,r)=>s+r.amount,0);return Math.abs(sum-d.total)<0.01;});
+  ok('差异关系：浮盈浮亏+其他+未解释-消费=差额',()=>{const items=[{actual:100,expected:120,explanation:'consumption'},{actual:50,expected:40,explanation:'floating'},{actual:10,expected:10,explanation:null},{actual:5,expected:0,explanation:'other'},{actual:0,expected:0,explanation:null}];let consumption=0,floating=0,other=0,unexplained=0,diff=0;items.forEach(it=>{const d=it.actual-it.expected;diff+=d;if(!d)return;if(it.explanation==='consumption')consumption+=-d;else if(it.explanation==='floating')floating+=d;else if(it.explanation==='other')other+=d;else unexplained+=d;});return Math.abs(floating+other+unexplained-consumption-diff)<1e-9;});
+  ok('快照按日期取最近基线',()=>{const saved=state.snapshots;state.snapshots=[{date:'2026-01-01',type:'opening'},{date:'2026-03-01',type:'reconcile'},{date:'2026-02-01',type:'reconcile'}];const b=snapshotBefore('2026-02-15');state.snapshots=saved;return b&&b.date==='2026-02-01';});
+  ok('外部资金净额按账户计算',()=>{const saved=state.flows;state.flows=[{id:'1',date:'2026-01-01',type:'external_in',toKey:'a:x',amount:100},{id:'2',date:'2026-01-02',type:'external_out',fromKey:'a:x',amount:30}];const d={fromDate:'2025-12-31',date:'2026-12-31',flows:[]};const v=netFlowForKey(d,'a:x');state.flows=saved;return Math.abs(v-70)<1e-9;});
+  ok('ETF 市值按份额×现价',()=>Math.abs(holdingMV({shares:100,currentPrice:1.5})-150)<1e-9);
+  ok('本机缓存可用',()=>{try{localStorage.setItem('__dd_test__','1');localStorage.removeItem('__dd_test__');return true;}catch(e){return false;}});
+  ok('云端连接',()=>!!sb&&!!currentUser&&sessionReady);
+  ok('数据完整性',()=>state.version===2&&Array.isArray(state.accounts)&&new Set(state.accounts.map(a=>a.id)).size===state.accounts.length);
+  ok('快照日期严格递增',()=>state.snapshots.every((s,i,a)=>i===0||String(a[i-1].date)<String(s.date)));
+  ok('金额均为有效数字',()=>state.accounts.filter(a=>a.kind==='leaf').every(a=>Number.isFinite(Number(a.amount))));
+  const pass=results.filter(r=>r.pass).length;
+  openModal(`<div class="modal-head"><h3>自检 ${pass}/${results.length}</h3></div><div class="table-wrap"><table><thead><tr><th>项目</th><th>结果</th><th>说明</th></tr></thead><tbody>${results.map(r=>`<tr><td>${esc(r.name)}</td><td class="${r.pass?'up':'down'}">${r.pass?'通过':'失败'}</td><td class="faint">${esc(r.detail)}</td></tr>`).join('')}</tbody></table></div><div class="form-actions"><button class="btn primary" data-close>确定</button></div>`);
 }
+
 function initBuildTag(){
   const tag=$('#buildTag');if(!tag)return;tag.textContent=BUILD;tag.title='当前页面构建 '+BUILD;
-  tag.onclick=()=>{const txt=JSON.stringify({build:BUILD,url:location.href,online:navigator.onLine,hasSupabase:!!sb,sessionReady:sessionReady,user:currentUser?currentUser.email:null,sync:syncMeta},null,2);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>toast('诊断信息已复制')).catch(()=>toast('诊断信息已输出到控制台'));}else{console.log(txt);toast('诊断信息已输出到控制台');}};
+  tag.onclick=()=>{const txt=JSON.stringify({build:BUILD,url:location.href,online:navigator.onLine,hasSupabase:!!sb,sessionReady,user:currentUser?currentUser.email:null,sync:syncMeta},null,2);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>toast('诊断信息已复制')).catch(()=>toast('诊断信息已输出到控制台'));}else{console.log(txt);toast('诊断信息已输出到控制台');}};
 }
 function bindStaticUI(){
   $$('.tab').forEach(t=>t.onclick=()=>switchView(t.dataset.view));
-  $('#btnStartReconcile').onclick=()=>{startReconcile(false);switchView('reconcile');};
-  $('#btnRefreshPlatform').onclick=()=>refreshPlatformHoldings({mode:'manual'});
-  $('#btnQuickFlow').onclick=()=>openFlowModal();
-  $('#btnOpenPlatform').onclick=()=>window.open(PLATFORM_URL,'_blank','noopener');
-  $('#btnNoticeRefresh').onclick=()=>refreshPlatformHoldings({mode:'manual'});
-  $('#btnNoticeHide').onclick=hidePlatformNotice;
+  const sr=$('#btnStartReconcile');if(sr)sr.onclick=()=>switchView('reconcile');
+  const rp=$('#btnRefreshPlatform');if(rp)rp.onclick=()=>refreshPlatformHoldings({mode:'manual'});
+  const op=$('#btnOpenPlatform');if(op)op.onclick=()=>window.open(PLATFORM_URL,'_blank','noopener');
+  const nr=$('#btnNoticeRefresh');if(nr)nr.onclick=()=>refreshPlatformHoldings({mode:'manual'});
+  const nh=$('#btnNoticeHide');if(nh)nh.onclick=hidePlatformNotice;
   if(sb){
     $('#btnLogin').onclick=doLogin;
     $('#loginPw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
     $('#btnLogout').onclick=doLogout;
     $('#btnLogoutLogin').onclick=doLogout;
-    try{sb.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){currentUser=null;sessionReady=false;clearLocalData();updateAuthUI(false);showLogin();showLoginError('');}});}catch(e){console.warn('[auth] listener failed',e);}
+    try{sb.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){currentUser=null;sessionReady=false;clearLocalData();updateAuthUI(false);hideBoot();showLogin();showLoginError('');}});}catch(e){console.warn('[auth] listener failed',e);}
   }
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-  window.addEventListener('beforeunload',e=>{if(cfgEditing){e.preventDefault();e.returnValue='';return;}if(state)saveState();});
+  window.addEventListener('beforeunload',e=>{const draftDirty=draft&&(draft.flows.length>0||draft.items.some(it=>Math.abs(it.actual-it.expected)>0.005)||String(draft.notes||'').trim());if(cfgEditing||draftDirty){e.preventDefault();e.returnValue='';}});
   window.addEventListener('online',()=>{if(state&&syncMeta.dirty)flushCloudPush();});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)pullIfNewer();});
-  window.addEventListener('storage',e=>{
-    if(e.key!==PLATFORM_KEY||!state||!sessionReady)return;
-    if($('#modalRoot').children.length)return;
-    const info=platformCacheInfo();
-    if(!info.ok||!info.holdings.length)return;
-    if(draft||state.snapshots.some(s=>String(s.date)===today())){refreshPlatformHoldings({mode:'auto',silent:true});return;}
-    maybeAutoRefreshPlatform();
-  });
 }
 function init(){
   initBuildTag();bindStaticUI();
@@ -1284,6 +1480,7 @@ function init(){
   loadSyncMeta();bootAuth();
 }
 init();
+
 </script>
 </body>
 </html>
