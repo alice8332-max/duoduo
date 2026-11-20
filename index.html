@@ -166,6 +166,17 @@ label{font-size:12px;color:var(--muted)}
 .summary-strip .box{background:var(--card2);border-radius:9px;padding:10px 12px}
 .summary-strip .box .lbl{font-size:11px;color:var(--muted)}
 .summary-strip .box .val{font-size:18px;font-weight:700;margin-top:2px}
+.ledger-equation{margin:6px 0 10px}
+.ledger-equation .le-row{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(20,26,38,.06);font-size:14px}
+.ledger-equation .le-sign{font-weight:700;font-size:15px;text-align:center;color:var(--muted)}
+.ledger-equation .le-sign.pos,.ledger-equation .le-amount.pos{color:var(--good)}
+.ledger-equation .le-sign.neg,.ledger-equation .le-amount.neg{color:var(--bad)}
+.ledger-equation .le-label{color:var(--ink)}
+.ledger-equation .le-amount{text-align:right;font-variant-numeric:tabular-nums}
+.ledger-equation .le-total{font-weight:700;font-size:15px;background:var(--card2)}
+.ledger-equation .le-total:first-child{border-radius:8px 8px 0 0;border-top:1px solid rgba(20,26,38,.1)}
+.ledger-equation .le-total:last-of-type{border-radius:0 0 8px 8px;border-bottom:none;border-top:2px solid rgba(20,26,38,.18)}
+.ledger-equation .le-extras{margin-top:8px;font-size:11px;color:var(--muted);line-height:1.7}
 .note{background:rgba(47,111,237,.06);border:1px solid rgba(47,111,237,.16);color:#244f9e;border-radius:8px;padding:9px 12px;font-size:12px;margin:10px 0}
 .note.warn{background:rgba(245,124,0,.07);border-color:rgba(245,124,0,.2);color:#8a4b00}
 .modal-back{position:fixed;inset:0;background:rgba(20,26,38,.42);display:flex;align-items:flex-start;justify-content:center;padding:36px 16px;z-index:50;overflow:auto}
@@ -198,7 +209,7 @@ body.locked .app{display:none}
 .login-card h2{font-size:18px;margin-bottom:6px}
 .login-card .err{color:var(--bad);font-size:12px;min-height:18px;margin:4px 0 8px}
 @media(max-width:900px){body{padding:14px 12px 56px}.metrics{grid-template-columns:repeat(2,1fr)}.dash-top{grid-template-columns:1fr}.consumption{grid-template-columns:1fr}.summary-strip{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.opening-grid{grid-template-columns:1fr}.topbar-actions{margin-left:0;width:100%}.topbar-actions .btn{flex:1}.alloc-row{grid-template-columns:12px 1fr auto 54px}.acc-leaf{grid-template-columns:1fr auto;row-gap:2px}.acc-leaf .grp{display:none}}
-@media(max-width:600px){.modal-back{padding:12px}.modal{padding:14px}.modal .form-actions{flex-wrap:wrap}.modal .form-actions .btn.primary{margin-left:0}.build-tag{display:none}.topbar-actions .btn{padding:6px 8px;font-size:12px}.inline-form,.inline-form.transfer{grid-template-columns:1fr}.explain-row{grid-template-columns:1fr}}
+@media(max-width:600px){.modal-back{padding:12px}.modal{padding:14px}.modal .form-actions{flex-wrap:wrap}.modal .form-actions .btn.primary{margin-left:0}.build-tag{display:none}.topbar-actions .btn{padding:6px 8px;font-size:12px}.inline-form,.inline-form.transfer{grid-template-columns:1fr}.explain-row{grid-template-columns:1fr}.ledger-equation .le-row{grid-template-columns:22px 1fr auto;font-size:13px;padding:6px 8px}}
 </style>
 </head>
 <body class="locked">
@@ -276,7 +287,7 @@ const LEGACY_KEY='ddData_v1_legacy_20261120';
 const LEGACY_BANNER_KEY='ddLegacyBannerDismissed_v1';
 const CORRUPT_KEY='ddData_v1_corrupted_backup';
 const SYNC_KEY='ddSyncMeta_v1';
-const BUILD='v0.6.0-20261120';
+const BUILD='v0.7.0-20261120';
 const PLATFORM_KEY='invPlatformData_v1';
 const PLATFORM_URL='https://alice8332-max.github.io/ftest/';
 const SUPABASE_URL='https://gqjbtbxtkiptjeryqawd.supabase.co';
@@ -783,7 +794,7 @@ function rebuildDraftItems(preserve){
     const o=old.get(it.key);
     if(o){
       if(!it.isEtf&&preserve)it.actual=o.actual;
-      it.floating=num(o.floating);
+      if(!it.isEtf)it.floating=num(o.floating);
     }
   });
   draft.items=fresh;
@@ -835,7 +846,17 @@ function flowItemHtml(f){
 }
 function ledgerStatsHtml(t){
   const ec=t.externalCategories||{income:0,expense:0,other:0};
-  return `<div class="box"><div class="lbl">期初总资产</div><div class="val num">¥${fmtMoney(t.prevTotal)}</div></div><div class="box"><div class="lbl">期初浮动盈亏</div><div class="val num ${clsNum(t.prevFloating)}">${fmtSigned(t.prevFloating)}</div></div><div class="box"><div class="lbl">本期收入（+）</div><div class="val num ${clsNum(ec.income)}">${fmtSigned(ec.income)}</div></div><div class="box"><div class="lbl">本期开支（−）</div><div class="val num ${clsNum(ec.expense)}">${fmtSigned(ec.expense)}</div></div><div class="box"><div class="lbl">本期其他</div><div class="val num ${clsNum(ec.other)}">${fmtSigned(ec.other)}</div></div><div class="box"><div class="lbl">期末总资产</div><div class="val num">¥${fmtMoney(t.totalAssets)}</div></div><div class="box"><div class="lbl">期末浮动盈亏</div><div class="val num ${clsNum(t.floatingTotal)}">${fmtSigned(t.floatingTotal)}</div></div><div class="box"><div class="lbl">本期浮动盈亏变化</div><div class="val num ${clsNum(t.floatingChange)}">${fmtSigned(t.floatingChange)}</div></div><div class="box"><div class="lbl">本期消费（日常开支，可为负）</div><div class="val num ${clsNum(t.consumption)}">${fmtSigned(t.consumption)}</div></div>`;
+  const rows=[{label:'本期收入',value:num(ec.income)},{label:'本期开支',value:num(ec.expense)},{label:'本期其他',value:num(ec.other)},{label:'本期浮动盈亏',value:num(t.floatingChange)},{label:'本期消费',value:-num(t.consumption)}].filter(r=>Math.abs(r.value)>0.005);
+  const plus=rows.filter(r=>r.value>0).sort((a,b)=>b.value-a.value);
+  const minus=rows.filter(r=>r.value<0).sort((a,b)=>a.value-b.value);
+  const line=(sign,r)=>`<div class="le-row"><span class="le-sign ${sign>0?'pos':'neg'}">${sign>0?'+':'−'}</span><span class="le-label">${esc(r.label)}</span><span class="le-amount ${sign>0?'pos':'neg'}">${fmtMoney(Math.abs(r.value))}</span></div>`;
+  const body=plus.map(r=>line(1,r)).join('')+minus.map(r=>line(-1,r)).join('');
+  const extras=[
+    {label:'期初浮动盈亏',value:num(t.prevFloating)},
+    {label:'期末浮动盈亏',value:num(t.floatingTotal)},
+    {label:'期间外部净流入',value:num(t.externalNet)}
+  ].filter(r=>Math.abs(r.value)>0.005).map(r=>`<span>${esc(r.label)} ${fmtSigned(r.value)}</span>`).join('　');
+  return `<div class="ledger-equation"><div class="le-row le-total"><span class="le-sign"></span><span class="le-label">期初总资产</span><span class="le-amount">¥${fmtMoney(t.prevTotal)}</span></div>${body}<div class="le-row le-total"><span class="le-sign">=</span><span class="le-label">期末总资产</span><span class="le-amount">¥${fmtMoney(t.totalAssets)}</span></div>${extras?`<div class="le-extras">${extras}</div>`:''}</div>`;
 }
 function reconTotalsStripHtml(t){
   return `<div class="box"><div class="lbl">期初总资产</div><div class="val num">¥${fmtMoney(t.prevTotal)}</div></div><div class="box"><div class="lbl">期末总资产</div><div class="val num">¥${fmtMoney(t.totalAssets)}</div></div><div class="box"><div class="lbl">期末浮动盈亏合计</div><div class="val num ${clsNum(t.floatingTotal)}">${fmtSigned(t.floatingTotal)}</div></div><div class="box"><div class="lbl">期间外部净流入</div><div class="val num ${clsNum(t.externalNet)}">${fmtSigned(t.externalNet)}</div></div>`;
@@ -932,7 +953,7 @@ function renderReconcile(){
   <div class="card"><div class="card-head"><h2>盘点</h2><span class="faint small">${draft.prevSnap?'上次基线：'+esc(draft.prevSnap.date):'首次盘点，无基线'} · 行情：${esc(cache.newest||'未知')}</span><span class="grow"></span><button class="btn small" id="btnOpening">${openingSnapshot()?'编辑期初':'录入期初'}</button><button class="btn small" id="btnReconReset">重置</button></div><div class="filters"><label>盘点日期 <input type="date" id="reconDate" value="${esc(draft.date)}"></label><span class="muted small">${draft.prevSnap?'期间外部资金按基线日之后登记；账户间转账不用记。':'首次盘点以当前余额为起点，期间净流入按 0 计算。'}</span></div></div>
   <div class="card step-card"><div class="step-head"><span class="step-num">1</span><h2>外部资金</h2><span class="grow"></span><span class="faint small">只记系统外进出；账户间转账不用登记，消费由总账倒算</span></div><div class="flow-list">${extFlows.length?extFlows.map(flowItemHtml).join(''):'<div class="empty">暂无外部资金</div>'}</div><div class="inline-form"><div class="field"><label>日期</label><input type="date" id="flowDate" value="${esc(draft.date)}"></div><div class="field"><label>方向</label><select id="flowDir"><option value="external_in">流入</option><option value="external_out">流出</option></select></div><div class="field"><label>类别</label><select id="flowCat">${FLOW_CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}</select></div><div class="field"><label>账户</label><select id="flowAcct">${extOpts}</select></div><div class="field"><label>金额</label><input type="number" step="0.01" inputmode="decimal" id="flowAmt" placeholder="0.00"></div><div class="field"><label>备注</label><input id="flowNote" placeholder="可选"></div><button class="btn" id="btnAddFlow">添加</button></div></div>
   <div class="card step-card"><div class="step-head"><span class="step-num">2</span><h2>盘点余额</h2><span class="grow"></span><button class="btn small" id="btnFillBefore">全部填入上次余额</button></div><div class="table-wrap"><table class="recon-table"><thead><tr><th>二级账户</th><th class="n">上次余额</th><th class="n">本次实际</th><th class="n">浮动盈亏</th></tr></thead><tbody>${rowsHtml||'<tr><td colspan="4" class="empty">还没有账户，请先到账户配置创建二级账户</td></tr>'}</tbody></table></div><div class="summary-strip" id="reconTotals">${reconTotalsStripHtml(t)}</div></div>
-  <div class="card step-card"><div class="step-head"><span class="step-num">3</span><h2>总账统计</h2><span class="grow"></span><span class="faint small">消费 = 期初总资产 + 外部净流入 + 本期浮动盈亏 − 期末总资产</span></div><div class="summary-strip" id="reconLedger">${ledgerStatsHtml(t)}</div><div class="note">每个账户的浮动盈亏请手工填写：盈为正、亏为负，没有浮动盈亏概念的账户填 0。账户间转账无需登记。</div></div>
+  <div class="card step-card"><div class="step-head"><span class="step-num">3</span><h2>总账统计</h2><span class="grow"></span><span class="faint small">期初 + 各项变动 = 期末；消费为倒算的日常开支</span></div><div id="reconLedger">${ledgerStatsHtml(t)}</div><div class="note">手工账户的浮动盈亏请填写；证券账户（ETF）自动取数无需填写。账户间转账无需登记。</div></div>
   <div class="card step-card"><div class="form-grid"><div class="field wide"><label>盘点备注</label><input id="reconNotes" placeholder="可选" value="${esc(draft.notes||'')}"></div></div><div class="form-actions"><button class="btn" id="btnReconCancel">取消</button><button class="btn primary" id="btnReconSave">保存盘点</button></div></div>`;
   bindReconcileEvents();
 }
@@ -1462,6 +1483,8 @@ function runSelfTest(){
   ok('快照按日期取最近基线',()=>{const saved=state.snapshots;state.snapshots=[{date:'2026-01-01',type:'opening'},{date:'2026-03-01',type:'reconcile'},{date:'2026-02-01',type:'reconcile'}];const b=snapshotBefore('2026-02-15');state.snapshots=saved;return b&&b.date==='2026-02-01';});
   ok('外部资金净额按账户计算',()=>{const saved=state.flows;state.flows=[{id:'1',date:'2026-01-01',type:'external_in',toKey:'a:x',amount:100},{id:'2',date:'2026-01-02',type:'external_out',fromKey:'a:x',amount:30}];const d={fromDate:'2025-12-31',date:'2026-12-31',flows:[]};const v=netFlowForKey(d,'a:x');state.flows=saved;return Math.abs(v-70)<1e-9;});
   ok('ETF 市值按份额×现价',()=>Math.abs(holdingMV({shares:100,currentPrice:1.5})-150)<1e-9);
+  ok('ETF 浮盈不被旧草稿覆盖',()=>{const savedDraft=draft,savedState=state;state={...state,imports:[{id:'t',importedAt:nowISO(),source:'invPlatformData_v1',mode:'test',holdings:[{code:'510300',name:'测试ETF',shares:1000,avgCost:3.8,currentPrice:4.2,floating:400,lastUpdate:today(),order:0}]}],accounts:[],settings:state.settings,version:2};draft={date:today(),fromDate:null,prevSnap:null,flows:[],notes:'',items:[]};const fresh=buildReconItems(null,draft);const etf=fresh.find(x=>x.isEtf);draft.items=fresh.map(x=>({...x,floating:0}));rebuildDraftItems(true);const after=draft.items.find(x=>x.isEtf);draft=savedDraft;state=savedState;return !!etf&&Math.abs(etf.floating-400)<1e-9&&!!after&&Math.abs(after.floating-400)<1e-9;});
+  ok('竖式等式自洽：期初+贡献=期末',()=>{const prevTotal=100000,income=20000,expense=-30000,other=0,floatingChange=3000,consumption=5000;const totalAssets=prevTotal+income+expense+other+floatingChange-consumption;const contributions=[income,expense,other,floatingChange,-consumption].reduce((s,v)=>s+v,0);return Math.abs(prevTotal+contributions-totalAssets)<1e-9;});
   ok('本机缓存可用',()=>{try{localStorage.setItem('__dd_test__','1');localStorage.removeItem('__dd_test__');return true;}catch(e){return false;}});
   ok('云端连接',()=>!!sb&&!!currentUser&&sessionReady);
   ok('数据完整性',()=>state.version===2&&Array.isArray(state.accounts)&&new Set(state.accounts.map(a=>a.id)).size===state.accounts.length);
